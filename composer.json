@@ -1,0 +1,9 @@
+{
+	"name": "nets/netseasyoxid6",
+	"version": "1.0.0",
+	"description": "Nets Easy Checkout module for oxid 6",
+	"homepage": "https://nets.eu",
+	"require": {
+		"php": ">=7.0"
+	}
+}
