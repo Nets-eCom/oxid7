@@ -20,6 +20,15 @@ $(function() {
 	});
 });
 
+$(function() {
+	$("tr.listing").each(function(){
+		var $quan = $(this).find(".quant").val();
+		var $price = $(this).find(".price").val();
+		var $curr = $(this).find(".currency").val();
+		$(this).find('.result').html(parseFloat($quan*$price).toFixed(2) + ' ' + $curr);
+	});
+});
+
 $(".single.qty").on('input change', function(e) {
 	var currentSingle = parseFloat($(this).val());
 	var ref = $(this).closest('.quantity').find(".reference").val();

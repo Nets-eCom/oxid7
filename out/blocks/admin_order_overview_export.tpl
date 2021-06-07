@@ -36,12 +36,15 @@
 				[{ if $responseItems.chargedItemsOnly }] 
 					<table class="item-listing charged" cellspacing="0" cellpadding="0" border="0" width="100%">		
 						[{ foreach key=ar item=item from=$responseItems.chargedItemsOnly }]
-							<tr>
+							<tr class="listing">
+								<input type="hidden" class="quant" value="[{ $item.quantity }]"/>
+								<input type="hidden" class="price" value="[{ $item.price }]"/>
+								<input type="hidden" class="currency" value="[{ $edit->oxorder__oxcurrency->value }]"/>
 								<td>[{ oxmultilang ident="SHOP_MODULE_nets_paystatus_charged" }] : </td>
-								<td class="listing">[{ $item.quantity }] * </td>
+								<td class="listing qty">[{ $item.quantity }] * </td>
 								<td class="listing">[{ $ar }]</td>
 								<td class="listing">[{ $item.name }]</td>
-								<td class="listing right">[{ $item.price }] [{ $edit->oxorder__oxcurrency->value }]</td>
+								<td class="listing result right">[{ $item.price }] [{ $edit->oxorder__oxcurrency->value }]</td>
 							</tr>
 						[{/foreach}]
 					</table>
@@ -157,12 +160,15 @@
 				[{ if $responseItems.refundedItems }] 
 					<table class="item-listing refunded" cellspacing="0" cellpadding="0" border="0" width="100%">		
 						[{ foreach key=ar item=item from=$responseItems.refundedItems }]
-							<tr>
+							<tr class="listing">
+								<input type="hidden" class="quant" value="[{ $item.quantity }]"/>
+								<input type="hidden" class="price" value="[{ $item.price }]"/>
+								<input type="hidden" class="currency" value="[{ $edit->oxorder__oxcurrency->value }]"/>
 								<td>[{ oxmultilang ident="SHOP_MODULE_nets_paystatus_refunded" }] : </td>
 								<td class="listing">[{ $item.quantity }]</td>
 								<td class="listing">[{ $ar }]</td>
 								<td class="listing">[{ $item.name }]</td>
-								<td class="listing right">[{ $item.price }] [{ $edit->oxorder__oxcurrency->value }]</td>
+								<td class="listing result right">[{ $item.price }] [{ $edit->oxorder__oxcurrency->value }]</td>
 							</tr>
 						[{/foreach}]
 					</table>

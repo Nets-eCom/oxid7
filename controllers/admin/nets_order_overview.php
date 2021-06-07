@@ -192,7 +192,7 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
         if (isset($ref) && isset($chargeQty)) {
             $totalAmount = 0;
             foreach ($data['items'] as $key => $value) {
-                if (in_array($ref, $value)) {
+                if (in_array($ref, $value) && $ref === $value['reference']) {
                     $value['quantity'] = $chargeQty;
                     $prodPrice = $value['oxbprice']; // product price incl. VAT in DB format
                     $tax = (int) $value['taxRate'] / 100; // Tax rate in DB format
@@ -255,7 +255,7 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
         if (isset($ref) && isset($refundQty)) {
             $totalAmount = 0;
             foreach ($data['items'] as $key => $value) {
-                if (in_array($ref, $value)) {
+                if (in_array($ref, $value) && $ref === $value['reference']) {
                     $value['quantity'] = $refundQty;
                     $prodPrice = $value['oxbprice']; // product price incl. VAT in DB format
                     $tax = (int) $value['taxRate'] / 100; // Tax rate in DB format
@@ -357,8 +357,84 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
             $totalOrderAmt += $this->prepareAmount($listitem->oxorderarticles__oxbrutprice->rawValue);
         }
 
-        // echo "<pre>";
-        // print_r($items);
+        $sSelectOrder = "
+			SELECT `oxorder`.* FROM `oxorder`
+			WHERE `oxorder`.`oxid` = '" . $oxorder . "'" . ($blExcludeCanceled ? "
+			AND `oxorder`.`oxstorno` != 1 " : " ") . "
+			ORDER BY `oxorder`.`oxordernr`";
+        $oOrderItems = oxNew('oxlist');
+        $oOrderItems->init('oxorder');
+        $oOrderItems->selectString($sSelectOrder);
+        foreach ($oOrderItems as $item) {
+
+            // payment costs if any additional sent as item
+            if ($item->oxorder__oxpaycost->rawValue > 0) {
+                $items[] = [
+                    'reference' => 'payment costs',
+                    'name' => 'payment costs',
+                    'quantity' => 1,
+                    'unit' => 'units',
+                    'unitPrice' => $this->prepareAmount($item->oxorder__oxpaycost->rawValue),
+                    'taxRate' => $this->prepareAmount($item->oxorder__oxpayvat->rawValue),
+                    'taxAmount' => 0,
+                    'grossTotalAmount' => $this->prepareAmount($item->oxorder__oxpaycost->rawValue),
+                    'netTotalAmount' => $this->prepareAmount($item->oxorder__oxpaycost->rawValue),
+                    'oxbprice' => $item->oxorder__oxpaycost->rawValue
+                ];
+                $totalOrderAmt += $this->prepareAmount($item->oxorder__oxpaycost->rawValue);
+            }
+
+            // greeting card if sent as item
+            if ($item->oxorder__oxgiftcardcost->rawValue > 0) {
+                $items[] = [
+                    'reference' => 'Greeting Card',
+                    'name' => 'Greeting Card',
+                    'quantity' => 1,
+                    'unit' => 'units',
+                    'unitPrice' => $this->prepareAmount($item->oxorder__oxgiftcardcost->rawValue),
+                    'taxRate' => $this->prepareAmount($item->oxorder__oxgiftcardvat->rawValue),
+                    'taxAmount' => 0,
+                    'grossTotalAmount' => $this->prepareAmount($item->oxorder__oxgiftcardcost->rawValue),
+                    'netTotalAmount' => $this->prepareAmount($item->oxorder__oxgiftcardcost->rawValue),
+                    'oxbprice' => $item->oxorder__oxgiftcardcost->rawValue
+                ];
+                $totalOrderAmt += $this->prepareAmount($item->oxorder__oxgiftcardcost->rawValue);
+            }
+
+            // gift wrapping if sent as item
+            if ($item->oxorder__oxwrapcost->rawValue > 0) {
+                $items[] = [
+                    'reference' => 'Gift Wrapping',
+                    'name' => 'Gift Wrapping',
+                    'quantity' => 1,
+                    'unit' => 'units',
+                    'unitPrice' => $this->prepareAmount($item->oxorder__oxwrapcost->rawValue),
+                    'taxRate' => $this->prepareAmount($item->oxorder__oxwrapvat->rawValue),
+                    'taxAmount' => 0,
+                    'grossTotalAmount' => $this->prepareAmount($item->oxorder__oxwrapcost->rawValue),
+                    'netTotalAmount' => $this->prepareAmount($item->oxorder__oxwrapcost->rawValue),
+                    'oxbprice' => $item->oxorder__oxwrapcost->rawValue
+                ];
+                $totalOrderAmt += $this->prepareAmount($item->oxorder__oxwrapcost->rawValue);
+            }
+
+            // shipping cost if sent as item
+            if ($item->oxorder__oxdelcost->rawValue > 0) {
+                $items[] = [
+                    'reference' => 'shipping',
+                    'name' => 'shipping',
+                    'quantity' => 1,
+                    'unit' => 'units',
+                    'unitPrice' => $this->prepareAmount($item->oxorder__oxdelcost->rawValue),
+                    'taxRate' => $this->prepareAmount($item->oxorder__oxdelvat->rawValue),
+                    'taxAmount' => 0,
+                    'grossTotalAmount' => $this->prepareAmount($item->oxorder__oxdelcost->rawValue),
+                    'netTotalAmount' => $this->prepareAmount($item->oxorder__oxdelcost->rawValue),
+                    'oxbprice' => $item->oxorder__oxdelcost->rawValue
+                ];
+                $totalOrderAmt += $this->prepareAmount($item->oxorder__oxdelcost->rawValue);
+            }
+        }
 
         return array(
             "items" => $items,
@@ -383,15 +459,10 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
             );
         }
 
-        // print_r($products);
-
         $api_return = $this->client->request('GET', $this->getApiUrl() . $this->getPaymentId($oxid), [
             'headers' => $this->getHeaders()
         ]);
         $response = json_decode($api_return->getBody(), true);
-
-        // echo "<pre>";
-        // print_r($response);
 
         if (! empty($response['payment']['charges'])) {
             $qty = 0;
@@ -399,23 +470,22 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
             $chargedItems = [];
             foreach ($response['payment']['charges'] as $key => $values) {
 
-                // echo $key;
-                // print_r($values);
-
                 for ($i = 0; $i < count($values['orderItems']); $i ++) {
                     if (array_key_exists($values['orderItems'][$i]['reference'], $chargedItems)) {
                         $qty = $chargedItems[$values['orderItems'][$i]['reference']]['quantity'] + $values['orderItems'][$i]['quantity'];
-                        $price = $values['orderItems'][$i]['grossTotalAmount'] * $qty;
+                        $price = $chargedItems[$values['orderItems'][$i]['reference']]['price'] + number_format((float) ($values['orderItems'][$i]['grossTotalAmount'] / 100), 2, '.', '');
+                        $priceGross = $price / $qty;
                         $chargedItems[$values['orderItems'][$i]['reference']] = array(
                             'name' => $values['orderItems'][$i]['name'],
                             'quantity' => $qty,
-                            'price' => number_format((float) ((($values['orderItems'][$i]['unitPrice'] / 100) * ('1.' . str_pad(number_format((float) $values['orderItems'][$i]['taxRate'], 2, '.', ''), 5, '0', STR_PAD_LEFT)))), 2, '.', '')
+                            'price' => $priceGross
                         );
                     } else {
+                        $priceOne = $values['orderItems'][$i]['grossTotalAmount'] / $values['orderItems'][$i]['quantity'];
                         $chargedItems[$values['orderItems'][$i]['reference']] = array(
                             'name' => $values['orderItems'][$i]['name'],
                             'quantity' => $values['orderItems'][$i]['quantity'],
-                            'price' => number_format((float) ((($values['orderItems'][$i]['unitPrice'] / 100) * ('1.' . str_pad(number_format((float) $values['orderItems'][$i]['taxRate'], 2, '.', ''), 5, '0', STR_PAD_LEFT)))), 2, '.', '')
+                            'price' => number_format((float) ($priceOne / 100), 2, '.', '')
                         );
                     }
                 }
@@ -434,24 +504,18 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
                         $refundedItems[$values['orderItems'][$i]['reference']] = array(
                             'name' => $values['orderItems'][$i]['name'],
                             'quantity' => $qty,
-                            'price' => number_format((float) ($price / 100), 2, ',', '')
+                            'price' => number_format((float) ($price / 100), 2, '.', '')
                         );
                     } else {
                         $refundedItems[$values['orderItems'][$i]['reference']] = array(
                             'name' => $values['orderItems'][$i]['name'],
                             'quantity' => $values['orderItems'][$i]['quantity'],
-                            'price' => number_format((float) ($values['orderItems'][$i]['grossTotalAmount'] / 100), 2, ',', '')
+                            'price' => number_format((float) ($values['orderItems'][$i]['grossTotalAmount'] / 100), 2, '.', '')
                         );
                     }
-
-                    // echo "$i == <pre>";
-                    // print_r($refundedItems);
                 }
             }
         }
-
-        // echo "<pre>";
-        // print_r($refundedItems);
 
         // get list of partial charged items and check with quantity and send list for charge rest of items
         foreach ($products as $key => $prod) {
@@ -504,9 +568,6 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
         if (count($refundedItems) > 0) {
             $lists['refundedItems'] = $refundedItems;
         }
-
-        // echo "<pre>";
-        // print_r($lists);
 
         // pass reserved, charged, refunded items list to frontend
         return $lists;

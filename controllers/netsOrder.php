@@ -275,7 +275,7 @@ class netsOrder extends netsOrder_parent
         }
 
         if ($shipCostAmt > 0) {
-            $shipCostAmt = $shipCostAmt * 100;
+            $shipCostAmt = round(round($shipCostAmt, 2) * 100);
             $items[] = [
                 'reference' => 'shipping',
                 'name' => 'shipping',
@@ -294,7 +294,7 @@ class netsOrder extends netsOrder_parent
         }
 
         if ($payCostAmt > 0) {
-            $payCostAmt = $payCostAmt * 100;
+            $payCostAmt = round(round($payCostAmt, 2) * 100);
             $items[] = [
                 'reference' => 'payment costs',
                 'name' => 'payment costs',
@@ -325,13 +325,13 @@ class netsOrder extends netsOrder_parent
         $wrappingCostAmt = $oBasket->getCosts('oxwrapping');
         if ($wrappingCostAmt) {
             $wrapCost = $oBasket->isCalculationModeNetto() ? $wrappingCostAmt->getNettoPrice() : $wrappingCostAmt->getBruttoPrice();
-            $wrapCost = $wrapCost * 100;
+            $wrapCost = round(round($wrapCost, 2) * 100);
         }
 
         $greetingCardAmt = $oBasket->getCosts('oxgiftcard');
         if ($greetingCardAmt) {
             $greetCardAmt = $oBasket->isCalculationModeNetto() ? $greetingCardAmt->getNettoPrice() : $greetingCardAmt->getBruttoPrice();
-            $greetCardAmt = $greetCardAmt * 100;
+            $greetCardAmt = round(round($greetCardAmt, 2) * 100);
         }
 
         if ($wrapCost > 0) {
@@ -566,7 +566,8 @@ class netsOrder extends netsOrder_parent
             $discount += round($voucher->dVoucherdiscount, 2);
         }
 
-        return $discount * 100;
+        // final discount amount
+        return round(round($discount, 2) * 100);
     }
 
     /*
