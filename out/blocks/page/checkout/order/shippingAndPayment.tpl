@@ -4,16 +4,16 @@
 [{if $oView->is_embedded() && $payment->oxpayments__oxid->value == 'nets_easy'}]
 
 	[{foreach from = $oxcmp_lang item = _language}]
-		[{if $_language->abbr=='en'}][{assign var="lang" value="en-GB"}][{/if}]
-		[{if $_language->abbr=='de'}][{assign var="lang" value="de-DE"}][{/if}]
-		[{if $_language->abbr=='dk'}][{assign var="lang" value="da-DK"}][{/if}]
-		[{if $_language->abbr=='se'}][{assign var="lang" value="sv-SE"}][{/if}]
-		[{if $_language->abbr=='no'}][{assign var="lang" value="nb-NO"}][{/if}]
-		[{if $_language->abbr=='fi'}][{assign var="lang" value="fi-FI"}][{/if}]
-		[{if $_language->abbr=='pl'}][{assign var="lang" value="pl-PL"}][{/if}]
-		[{if $_language->abbr=='nl'}][{assign var="lang" value="nl-NL"}][{/if}]
-		[{if $_language->abbr=='fr'}][{assign var="lang" value="fr-FR"}][{/if}]
-		[{if $_language->abbr=='es'}][{assign var="lang" value="es-ES"}][{/if}]
+	[{if $_language->selected == 1}][{if $_language->abbr=='en'}][{assign var="lang" value="en-GB"}][{/if}][{/if}]
+	[{if $_language->selected == 1}][{if $_language->abbr=='de'}][{assign var="lang" value="de-DE"}][{/if}][{/if}]
+	[{if $_language->selected == 1}][{if $_language->abbr=='dk'}][{assign var="lang" value="da-DK"}][{/if}][{/if}]
+	[{if $_language->selected == 1}][{if $_language->abbr=='se'}][{assign var="lang" value="sv-SE"}][{/if}][{/if}]
+	[{if $_language->selected == 1}][{if $_language->abbr=='no'}][{assign var="lang" value="nb-NO"}][{/if}][{/if}]
+	[{if $_language->selected == 1}][{if $_language->abbr=='fi'}][{assign var="lang" value="fi-FI"}][{/if}][{/if}]
+	[{if $_language->selected == 1}][{if $_language->abbr=='pl'}][{assign var="lang" value="pl-PL"}][{/if}][{/if}]
+	[{if $_language->selected == 1}][{if $_language->abbr=='nl'}][{assign var="lang" value="nl-NL"}][{/if}][{/if}]
+	[{if $_language->selected == 1}][{if $_language->abbr=='fr'}][{assign var="lang" value="fr-FR"}][{/if}][{/if}]
+	[{if $_language->selected == 1}][{if $_language->abbr=='es'}][{assign var="lang" value="es-ES"}][{/if}][{/if}]
 	[{/foreach}]
 
         [{oxscript include="js/libs/jquery.min.js" priority=1}]
@@ -45,6 +45,7 @@
 			containerId : "dibs-complete-checkout",
 			language: "[{$lang}]"
 		};
+
 		var checkout = new Dibs.Checkout(checkoutOptions);
 		checkout.on('payment-completed', function(response) {
 			$("#orderConfirmAgbBottom").submit();
