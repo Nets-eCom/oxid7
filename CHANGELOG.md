@@ -12,5 +12,5 @@
 
 ## CHANGELOG
 
-### Version 1.0.0 - Released 2021-05-24
-* New : Nets Easy plugin release
+### Version 1.0.0 - Released 2021-06-30
+* New : Nets Easy plugin for oxid - initial release
