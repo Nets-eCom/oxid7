@@ -482,8 +482,9 @@ class netsOrder extends netsOrder_parent
             'body' => json_encode($data)
         ];
 
-        nets_log::log($this->_nets_log, "netsOrder, api request data here 2 : ", json_encode(utf8_ensure($params)));
         try {
+            $params['headers']['commercePlatformTag'] = "Oxid6";
+            nets_log::log($this->_nets_log, "netsOrder, api request data here 2 : ", json_encode(utf8_ensure($params)));
             $api_return = $this->client->request('POST', $apiUrl, $params);
             $response = json_decode($api_return->getBody(), true);
             nets_log::log($this->_nets_log, "netsOrder, api return data create trans: ", json_decode($api_return->getBody(), true));
