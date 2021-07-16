@@ -15,5 +15,5 @@
 ### Version 1.0.1 - Released 2021-07-16
 * Added : Headers modified for platform tag
 
-### Version 1.0.0 - Released 2021-05-24
+### Version 1.0.0 - Released 2021-06-30
 * New : Nets Easy plugin release
