@@ -10,6 +10,7 @@
 |Guide        | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-oxid/
 |Github       | https://github.com/Nets-eCom/oxid6_easy
 
+
 ## INSTALLATION
 * See our user guide with illustrations in /nets/docs/Oxid_guide_Nets.pdf
 
