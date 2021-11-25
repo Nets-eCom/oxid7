@@ -6,9 +6,9 @@
 |Author       | `Nets eCom`
 |Prefix       | `EASY-OX6`
 |Shop Version | `6+`
-|Version      | `1.0.1`
-|Guide        | https://tech.nets.eu/shopmodules
-|Github       | https://github.com/DIBS-Payment-Services/oxid6_easy
+|Version      | `1.1.0`
+|Guide        | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-oxid/
+|Github       | https://github.com/Nets-eCom/oxid6_easy
 
 ## INSTALLATION
 * See our user guide with illustrations in /nets/docs/Oxid_guide_Nets.pdf

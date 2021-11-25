@@ -25,7 +25,6 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
 
     public function __construct()
     {
-        $this->client = new \GuzzleHttp\Client();
         $this->_nets_log = $this->getConfig()->getConfigParam('nets_blDebug_log');
         nets_log::log($this->_nets_log, "Nets_Order_Overview, constructor");
     }
@@ -80,10 +79,7 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
                 ];
 
                 try {
-                    $this->client->request('POST', $cancelUrl, [
-                        'headers' => $this->getHeaders(),
-                        'body' => json_encode($cancelBody)
-                    ]);
+                    $this->getCurlResponse($cancelUrl, 'POST', json_encode($cancelBody));
                 } catch (Exception $e) {
                     return $e->getMessage();
                 }
@@ -91,13 +87,8 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
 
             try {
                 // Get payment status from nets payments api
-                $api_return = $this->client->request('GET', $this->getApiUrl() . $this->getPaymentId($oxoder_id), [
-                    'headers' => $this->getHeaders()
-                ]);
-                $response = json_decode($api_return->getBody(), true);
-
-                // echo "<pre>";
-                // print_r($response);
+                $api_return = $this->getCurlResponse($this->getApiUrl() . $this->getPaymentId($oxoder_id), 'GET');
+                $response = json_decode($api_return, true);
             } catch (Exception $e) {
                 return $e->getMessage();
             }
@@ -219,11 +210,10 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
             ];
         }
         nets_log::log($this->_nets_log, "Nets_Order_Overview" . json_encode($body));
-        $api_return = $this->client->request('POST', $chargeUrl, [
-            'headers' => $this->getHeaders(),
-            'body' => json_encode($body)
-        ]);
-        $response = json_decode($api_return->getBody(), true);
+
+        $api_return = $this->getCurlResponse($chargeUrl, 'POST', json_encode($body));
+        $response = json_decode($api_return, true);
+
         nets_log::log($this->_nets_log, "Nets_Order_Overview" . $response);
         $oDB = oxDb::getDb(true);
         $dt = date("Y-m-d H:i:s");
@@ -253,6 +243,7 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
         $refundQty = oxRegistry::getConfig()->getRequestParameter('refund');
 
         if (isset($ref) && isset($refundQty)) {
+
             $totalAmount = 0;
             foreach ($data['items'] as $key => $value) {
                 if (in_array($ref, $value) && $ref === $value['reference']) {
@@ -282,11 +273,9 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
             ];
         }
         nets_log::log($this->_nets_log, "Nets_Order_Overview getorder refund" . json_encode($body));
-        $api_return = $this->client->request('POST', $refundUrl, [
-            'headers' => $this->getHeaders(),
-            'body' => json_encode($body)
-        ]);
-        $response = json_decode($api_return->getBody(), true);
+
+        $api_return = $this->getCurlResponse($refundUrl, 'POST', json_encode($body));
+        $response = json_decode($api_return, true);
 
         oxRegistry::getUtils()->redirect($this->getConfig()
             ->getSslShopUrl() . 'admin/index.php?cl=admin_order&force_admin_sid' . $admin_sid . '&stoken=' . $stoken);
@@ -311,11 +300,9 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
             'amount' => $data['totalAmt'],
             'orderItems' => $data['items']
         ];
-        $api_return = $this->client->request('POST', $cancelUrl, [
-            'headers' => $this->getHeaders(),
-            'body' => json_encode($body)
-        ]);
-        $response = json_decode($api_return->getBody(), true);
+
+        $api_return = $this->getCurlResponse($cancelUrl, 'POST', json_encode($body));
+        $response = json_decode($api_return, true);
 
         oxRegistry::getUtils()->redirect($this->getConfig()
             ->getSslShopUrl() . 'admin/index.php?cl=admin_order&force_admin_sid' . $admin_sid . '&stoken=' . $stoken);
@@ -451,6 +438,9 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
     {
         $prodItems = $this->getOrderItems($oxid);
         $products = [];
+        $chargedItems = [];
+        $refundedItems = [];
+        $itemsList = [];
         foreach ($prodItems['items'] as $items) {
             $products[$items['reference']] = array(
                 'name' => $items['name'],
@@ -459,15 +449,13 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
             );
         }
 
-        $api_return = $this->client->request('GET', $this->getApiUrl() . $this->getPaymentId($oxid), [
-            'headers' => $this->getHeaders()
-        ]);
-        $response = json_decode($api_return->getBody(), true);
+        $api_return = $this->getCurlResponse($this->getApiUrl() . $this->getPaymentId($oxid), 'GET');
+        $response = json_decode($api_return, true);
 
         if (! empty($response['payment']['charges'])) {
             $qty = 0;
             $price = 0;
-            $chargedItems = [];
+
             foreach ($response['payment']['charges'] as $key => $values) {
 
                 for ($i = 0; $i < count($values['orderItems']); $i ++) {
@@ -495,7 +483,7 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
         if (! empty($response['payment']['refunds'])) {
             $qty = 0;
             $price = 0;
-            $refundedItems = [];
+
             foreach ($response['payment']['refunds'] as $key => $values) {
                 for ($i = 0; $i < count($values['orderItems']); $i ++) {
                     if (array_key_exists($values['orderItems'][$i]['reference'], $refundedItems)) {
@@ -594,10 +582,8 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
 
     public function getResponse($oxoder_id)
     {
-        $api_return = $this->client->request('GET', $this->getApiUrl() . $this->getPaymentId($oxoder_id), [
-            'headers' => $this->getHeaders()
-        ]);
-        $response = json_decode($api_return->getBody(), true);
+        $api_return = $this->getCurlResponse($this->getApiUrl() . $this->getPaymentId($oxoder_id), 'GET');
+        $response = json_decode($api_return, true);
         $result = json_encode($response, JSON_PRETTY_PRINT);
         return $result;
     }
@@ -609,9 +595,9 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
     private function getHeaders()
     {
         return [
-            'Content-Type' => self::RESPONSE_TYPE,
-            'Accept' => self::RESPONSE_TYPE,
-            'Authorization' => $this->getSecretKey()
+            "Content-Type: " . self::RESPONSE_TYPE,
+            "Accept: " . self::RESPONSE_TYPE,
+            "Authorization: " . $this->getSecretKey()
         ];
     }
 
@@ -658,10 +644,8 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
     private function getChargeId($oxoder_id)
     {
         // Get charge id from nets payments api
-        $api_return = $this->client->request('GET', $this->getApiUrl() . $this->getPaymentId($oxoder_id), [
-            'headers' => $this->getHeaders()
-        ]);
-        $response = json_decode($api_return->getBody(), true);
+        $api_return = $this->getCurlResponse($this->getApiUrl() . $this->getPaymentId($oxoder_id), 'GET');
+        $response = json_decode($api_return, true);
         return $response['payment']['charges'][0]['chargeId'];
     }
 
@@ -720,5 +704,42 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
     public function getRefundPaymentUrl($chargeId)
     {
         return ($this->getConfig()->getConfigParam('nets_blMode') == 1) ? self::ENDPOINT_LIVE_CHARGES . $chargeId . '/refunds' : self::ENDPOINT_TEST_CHARGES . $chargeId . '/refunds';
+    }
+
+    public function getCurlResponse($url, $method = "POST", $bodyParams = NULL)
+    {
+        $result = '';
+
+        // initiating curl request to call api's
+        $oCurl = curl_init();
+        curl_setopt($oCurl, CURLOPT_URL, $url);
+        curl_setopt($oCurl, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($oCurl, CURLOPT_HTTPHEADER, $this->getHeaders());
+        if ($method == "POST" || $method == "PUT") {
+            curl_setopt($oCurl, CURLOPT_POSTFIELDS, $bodyParams);
+        }
+        // print_r(curl_getinfo($oCurl));
+        $result = curl_exec($oCurl);
+
+        $info = curl_getinfo($oCurl);
+
+        switch ($info['http_code']) {
+            case 401:
+                $error_message = 'NETS Easy authorization filed. Check your secret/checkout keys';
+                break;
+            case 400:
+                $error_message = 'NETS Easy Bad request: Please check request params/headers ';
+                break;
+            case 500:
+                $error_message = 'Unexpected error';
+                break;
+        }
+        if (! empty($error_message)) {
+            nets_log::log($this->_nets_log, "netsOrder Curl request error, $error_message");
+        }
+        curl_close($oCurl);
+
+        return $result;
     }
 }

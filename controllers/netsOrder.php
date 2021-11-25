@@ -37,7 +37,6 @@ class netsOrder extends netsOrder_parent
      */
     public function __construct()
     {
-        $this->client = new \GuzzleHttp\Client();
         $this->_nets_log = $this->getConfig()->getConfigParam('nets_blDebug_log');
         nets_log::log($this->_nets_log, "netsOrder, constructor");
     }
@@ -97,10 +96,9 @@ class netsOrder extends netsOrder_parent
                             ->getVariable('sess_challenge'),
                         $paymentId
                     ]);
-                    $api_return = $this->client->request('GET', $this->getApiUrl() . $paymentId, [
-                        'headers' => $this->getHeaders()
-                    ]);
-                    $response = json_decode($api_return->getBody(), true);
+
+                    $api_return = $this->getCurlResponse($this->getApiUrl() . $paymentId, "GET");
+                    $response = json_decode($api_return, true);
                     nets_log::log($this->_nets_log, " payment api status netsOrder, response", $response);
                     $refUpdate = [
                         'reference' => $orderNr,
@@ -109,10 +107,7 @@ class netsOrder extends netsOrder_parent
                     nets_log::log($this->_nets_log, " refupdate netsOrder, order nr", $oOrder->oxorder__oxordernr->value);
                     nets_log::log($this->_nets_log, " payment api status netsOrder, response checkout url", $response['payment']['checkout']['url']);
                     nets_log::log($this->_nets_log, " refupdate netsOrder, response", $refUpdate);
-                    $this->client->request('PUT', $this->getUpdateRefUrl($paymentId), [
-                        'headers' => $this->getHeaders(),
-                        'body' => json_encode($refUpdate)
-                    ]);
+                    $this->getCurlResponse($this->getUpdateRefUrl($paymentId), 'PUT', json_encode($refUpdate));
                     oxRegistry::getUtils()->redirect($this->getConfig()
                         ->getSslShopUrl() . 'index.php?cl=thankyou');
                 } else {
@@ -133,9 +128,9 @@ class netsOrder extends netsOrder_parent
     private function getHeaders()
     {
         return [
-            'Content-Type' => self::RESPONSE_TYPE,
-            'Accept' => self::RESPONSE_TYPE,
-            'Authorization' => $this->getSecretKey()
+            "Content-Type: " . self::RESPONSE_TYPE,
+            "Accept: " . self::RESPONSE_TYPE,
+            "Authorization: " . $this->getSecretKey()
         ];
     }
 
@@ -476,20 +471,15 @@ class netsOrder extends netsOrder_parent
             ];
         }
 
-        // http client request params build
-        $params = [
-            'headers' => $this->getHeaders(),
-            'body' => json_encode($data)
-        ];
-
         try {
             $params['headers']['commercePlatformTag'] = "Oxid6";
             nets_log::log($this->_nets_log, "netsOrder, api request data here 2 : ", json_encode(utf8_ensure($params)));
-            $api_return = $this->client->request('POST', $apiUrl, $params);
-            $response = json_decode($api_return->getBody(), true);
-            nets_log::log($this->_nets_log, "netsOrder, api return data create trans: ", json_decode($api_return->getBody(), true));
+            $api_return = $this->getCurlResponse($apiUrl, 'POST', json_encode($data));
+            $response = json_decode($api_return, true);
+
+            nets_log::log($this->_nets_log, "netsOrder, api return data create trans: ", json_decode($api_return, true));
             // create entry in oxnets table for transaction
-            nets_table::createTransactionEntry(json_encode(utf8_ensure($params)), $api_return->getBody(), $this->getOrderId(), $response['paymentId'], $oID, intval(strval($oBasket->getPrice()->getBruttoPrice() * 100)));
+            nets_table::createTransactionEntry(json_encode(utf8_ensure($params)), $api_return, $this->getOrderId(), $response['paymentId'], $oID, intval(strval($oBasket->getPrice()->getBruttoPrice() * 100)));
 
             // Set language for hosted payment page
             $language = oxRegistry::getLang()->getLanguageAbbr();
@@ -699,5 +689,43 @@ class netsOrder extends netsOrder_parent
         return oxRegistry::getConfig()->getActiveView()
             ->getViewConfig()
             ->getModuleUrl("nets", "out/src/js/") . $this->getConfig()->getConfigParam('nets_layout_mode') . '.js';
+    }
+
+    /* curl request to execute api calls */
+    public function getCurlResponse($url, $method = "POST", $bodyParams = NULL)
+    {
+        $result = '';
+
+        // initiating curl request to call api's
+        $oCurl = curl_init();
+        curl_setopt($oCurl, CURLOPT_URL, $url);
+        curl_setopt($oCurl, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($oCurl, CURLOPT_HTTPHEADER, $this->getHeaders());
+        if ($method == "POST" || $method == "PUT") {
+            curl_setopt($oCurl, CURLOPT_POSTFIELDS, $bodyParams);
+        }
+
+        $result = curl_exec($oCurl);
+
+        $info = curl_getinfo($oCurl);
+
+        switch ($info['http_code']) {
+            case 401:
+                $error_message = 'NETS Easy authorization filed. Check your secret/checkout keys';
+                break;
+            case 400:
+                $error_message = 'NETS Easy Bad request: Please check request params/headers ';
+                break;
+            case 500:
+                $error_message = 'Unexpected error';
+                break;
+        }
+        if (! empty($error_message)) {
+            nets_log::log($this->_nets_log, "netsOrder Curl request error, $error_message");
+        }
+        curl_close($oCurl);
+
+        return $result;
     }
 }

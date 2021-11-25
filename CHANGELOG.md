@@ -6,11 +6,14 @@
 |Author       | `Nets eCom`
 |Prefix       | `EASY-OX6`
 |Shop Version | `6+`
-|Version      | `1.0.1`
-|Guide        | https://tech.nets.eu/shopmodules
-|Github       | https://github.com/DIBS-Payment-Services/oxid6_easy
+|Version      | `1.1.0`
+|Guide        | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-oxid/
+|Github       | https://github.com/Nets-eCom/oxid6_easy
 
 ## CHANGELOG
+
+### Version 1.1.0 - Released 2021-11-25
+* Fixed : Change in http library. 
 
 ### Version 1.0.1 - Released 2021-07-16
 * Added : Headers modified for platform tag
