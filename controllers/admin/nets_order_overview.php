@@ -95,11 +95,17 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
 
             $dbPayStatus = '';
             $paymentStatus = '';
+            $pending = '';
             $cancelled = $response['payment']['summary']['cancelledAmount'];
             $reserved = $response['payment']['summary']['reservedAmount'];
             $charged = $response['payment']['summary']['chargedAmount'];
             $refunded = $response['payment']['summary']['refundedAmount'];
-            $pending = $response['payment']['refunds'][0]['state'] == "Pending";
+
+            if ($response['payment']['refunds'] != NULL) {
+                if (in_array("Pending", array_column($response['payment']['refunds'], 'state'))) {
+                    $pending = "Pending";
+                }
+            }
             $partialc = $reserved - $charged;
             $partialr = $reserved - $refunded;
             $chargeid = $response['payment']['charges'][0]['chargeId'];
@@ -118,6 +124,9 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
                         $oDB->Execute("UPDATE oxnets SET partial_amount = '{$partialc}' WHERE oxorder_id = '{$oxoder_id}'");
                         $oDB->Execute("UPDATE oxnets SET charge_id = '{$chargeid}' WHERE oxorder_id = '{$oxoder_id}'");
                         $oDB->Execute("UPDATE oxorder SET oxpaid = '{$chargedate}' WHERE oxid = '{$oxoder_id}'");
+                    } else if ($pending) {
+                        $paymentStatus = "Refund Pending";
+                        $langStatus = "refund_pending";
                     } else if ($refunded) {
                         if ($reserved != $refunded) {
                             $paymentStatus = "Partial Refunded";
@@ -137,9 +146,6 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
                         $langStatus = "charged";
                         $dbPayStatus = 4; // For payment status as Charged in oxnets db table
                     }
-                } else if ($pending) {
-                    $paymentStatus = "Refund Pending";
-                    $langStatus = "refund_pending";
                 } else {
                     $paymentStatus = 'Reserved';
                     $langStatus = "reserved";
@@ -220,6 +226,21 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
         $oDB->Execute("UPDATE oxorder SET oxpaid = '{$dt}'
 		WHERE oxid = '{$oxorder}'");
 
+        // save charge details in db for partial refund
+        if (isset($ref) && isset($response['chargeId'])) {
+            $oDB = oxDb::getDb(true);
+            $charge_query = "INSERT INTO `oxnets` (`transaction_id`, `charge_id`,  `product_ref`, `charge_qty`, `charge_left_qty`) " . "values ('" . $payment_id . "', '" . $response['chargeId'] . "', '" . $ref . "', '" . $chargeQty . "', '" . $chargeQty . "')";
+            $oDB->Execute($charge_query);
+        } else {
+            $oDB = oxDb::getDb(true);
+            if (isset($response['chargeId'])) {
+                foreach ($data['items'] as $key => $value) {
+                    $charge_query = "INSERT INTO `oxnets` (`transaction_id`,`charge_id`,  `product_ref`, `charge_qty`, `charge_left_qty`) " . "values ('" . $payment_id . "', '" . $response['chargeId'] . "', '" . $value['reference'] . "', '" . $value['quantity'] . "', '" . $value['quantity'] . "')";
+                    $oDB->Execute($charge_query);
+                }
+            }
+        }
+
         oxRegistry::getUtils()->redirect($this->getConfig()
             ->getSslShopUrl() . 'admin/index.php?cl=admin_order&force_admin_sid' . $admin_sid . '&stoken=' . $stoken);
     }
@@ -235,50 +256,116 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
         $oxorder = oxRegistry::getConfig()->getRequestParameter('oxorderid');
         $orderno = oxRegistry::getConfig()->getRequestParameter('orderno');
         $data = $this->getOrderItems($oxorder);
-        $charge_id = $this->getChargeId($oxorder);
-
-        // call refund api here
-        $refundUrl = $this->getRefundPaymentUrl($charge_id);
+        $chargeResponse = $this->getChargeId($oxorder);
         $ref = oxRegistry::getConfig()->getRequestParameter('reference');
         $refundQty = oxRegistry::getConfig()->getRequestParameter('refund');
+        $payment_id = $this->getPaymentId($oxorder);
+        $refundEachQtyArr = array();
+        $breakloop = false;
+        $cnt = 1;
 
-        if (isset($ref) && isset($refundQty)) {
+        foreach ($chargeResponse['response']['payment']['charges'] as $ky => $val) {
 
-            $totalAmount = 0;
-            foreach ($data['items'] as $key => $value) {
-                if (in_array($ref, $value) && $ref === $value['reference']) {
-                    $value['quantity'] = $refundQty;
-                    $prodPrice = $value['oxbprice']; // product price incl. VAT in DB format
-                    $tax = (int) $value['taxRate'] / 100; // Tax rate in DB format
-                    $taxFormat = '1' . str_pad(number_format((float) $tax, 2, '.', ''), 5, '0', STR_PAD_LEFT);
-                    $unitPrice = round(round(($prodPrice * 100) / $taxFormat, 2) * 100);
-                    $netAmount = round($refundQty * $unitPrice);
-                    $grossAmount = round($refundQty * ($prodPrice * 100));
-                    $value['netTotalAmount'] = $netAmount;
-                    $value['grossTotalAmount'] = $grossAmount;
-                    $value['taxAmount'] = $grossAmount - $netAmount;
-                    unset($value['oxbprice']);
-                    $itemList[] = $value;
-                    $totalAmount += $grossAmount;
+            if (empty($ref)) {
+
+                $body = [
+                    'amount' => $val['amount'],
+                    'orderItems' => $val['orderItems']
+                ];
+
+                $refundUrl = $this->getRefundPaymentUrl($val['chargeId']);
+                $this->getCurlResponse($refundUrl, 'POST', json_encode($body));
+
+                // table update forcharge refund quantity
+                $oDb = oxDb::getDb();
+                $oDb->execute("UPDATE oxnets SET charge_left_qty = 0 WHERE transaction_id = '" . $payment_id . "' AND charge_id = '" . $val['chargeId'] . "'");
+
+                nets_log::log($this->_nets_log, "Nets_Order_Overview getorder refund" . json_encode($body));
+            } else if (in_array($ref, array_column($val['orderItems'], 'reference'))) {
+
+                $oDb = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
+                $charge_query = $oDb->getAll("SELECT `transaction_id`, `charge_id`,  `product_ref`, `charge_qty`, `charge_left_qty` FROM oxnets WHERE transaction_id = ? AND charge_id = ? AND product_ref = ? AND charge_left_qty !=0", [
+                    $payment_id,
+                    $val['chargeId'],
+                    $ref
+                ]);
+
+                if (count($charge_query) > 0) {
+                    $table_charge_left_qty = $refundEachQtyArr[$val['chargeId']] = $charge_query[0]['charge_left_qty'];
+                }
+
+                if ($refundQty <= array_sum($refundEachQtyArr)) {
+                    $leftqtyFromArr = array_sum($refundEachQtyArr) - $refundQty;
+                    $leftqty = $table_charge_left_qty - $leftqtyFromArr;
+                    $refundEachQtyArr[$val['chargeId']] = $leftqty;
+                    $breakloop = true;
+                }
+                if ($breakloop) {
+
+                    foreach ($refundEachQtyArr as $key => $value) {
+                        $body = $this->getItemForRefund($ref, $value, $data);
+
+                        $refundUrl = $this->getRefundPaymentUrl($key);
+                        $this->getCurlResponse($refundUrl, 'POST', json_encode($body));
+                        nets_log::log($this->_nets_log, "Nets_Order_Overview getorder refund" . json_encode($body));
+
+                        $oDb = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
+                        $singlecharge_query = $oDb->getAll("SELECT  `charge_left_qty` FROM oxnets WHERE transaction_id = ? AND charge_id = ? AND product_ref = ? AND charge_left_qty !=0", [
+                            $payment_id,
+                            $val['chargeId'],
+                            $ref
+                        ]);
+
+                        if (count($singlecharge_query) > 0) {
+                            $charge_left_qty = $singlecharge_query[0]['charge_left_qty'];
+                        }
+
+                        $charge_left_qty = $value - $charge_left_qty;
+                        if ($charge_left_qty < 0) {
+                            $charge_left_qty = - $charge_left_qty;
+                        }
+
+                        $oDb = oxDb::getDb();
+                        $oDb->execute("UPDATE oxnets SET charge_left_qty = $charge_left_qty WHERE transaction_id = '" . $payment_id . "' AND charge_id = '" . $key . "' AND product_ref = '" . $ref . "'");
+                    }
+
+                    break;
                 }
             }
-            $body = [
-                'amount' => $totalAmount,
-                'orderItems' => $itemList
-            ];
-        } else {
-            $body = [
-                'amount' => $data['totalAmt'],
-                'orderItems' => $data['items']
-            ];
         }
-        nets_log::log($this->_nets_log, "Nets_Order_Overview getorder refund" . json_encode($body));
-
-        $api_return = $this->getCurlResponse($refundUrl, 'POST', json_encode($body));
-        $response = json_decode($api_return, true);
 
         oxRegistry::getUtils()->redirect($this->getConfig()
             ->getSslShopUrl() . 'admin/index.php?cl=admin_order&force_admin_sid' . $admin_sid . '&stoken=' . $stoken);
+    }
+
+    /* Get order Items to refund and pass them to refund api */
+    public function getItemForRefund($ref, $refundQty, $data)
+    {
+        $totalAmount = 0;
+        foreach ($data['items'] as $key => $value) {
+            if ($ref === $value['reference']) {
+                $value['quantity'] = $refundQty;
+                $prodPrice = $value['oxbprice']; // product price incl. VAT in DB format
+                $tax = (int) $value['taxRate'] / 100; // Tax rate in DB format
+                $taxFormat = '1' . str_pad(number_format((float) $tax, 2, '.', ''), 5, '0', STR_PAD_LEFT);
+                $unitPrice = round(round(($prodPrice * 100) / $taxFormat, 2) * 100);
+                $netAmount = round($refundQty * $unitPrice);
+                $grossAmount = round($refundQty * ($prodPrice * 100));
+                $value['netTotalAmount'] = $netAmount;
+                $value['grossTotalAmount'] = $grossAmount;
+                $value['taxAmount'] = $grossAmount - $netAmount;
+                unset($value['oxbprice']);
+                $itemList[] = $value;
+                $totalAmount += $grossAmount;
+            }
+        }
+
+        $body = [
+            'amount' => $totalAmount,
+            'orderItems' => $itemList
+        ];
+
+        return $body;
     }
 
     /*
@@ -529,7 +616,7 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
             }
 
             if (array_key_exists($key, $chargedItems) && array_key_exists($key, $refundedItems)) {
-                if ($chargedItems[$key]['quantity'] == $refundedItems[$key]['quantity']) {
+                if ($prod['quantity'] == $chargedItems[$key]['quantity'] && $chargedItems[$key]['quantity'] == $refundedItems[$key]['quantity']) {
                     unset($chargedItems[$key]);
                 }
             }
@@ -646,7 +733,23 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
         // Get charge id from nets payments api
         $api_return = $this->getCurlResponse($this->getApiUrl() . $this->getPaymentId($oxoder_id), 'GET');
         $response = json_decode($api_return, true);
-        return $response['payment']['charges'][0]['chargeId'];
+
+        $chargesMap = array_map(function ($element) {
+            return $element['chargeId'];
+        }, $response['payment']['charges']);
+
+        if (count($chargesMap) == 1) {
+            $result = array(
+                "chargeId" => $response['payment']['charges'][0]['chargeId']
+            );
+        } else {
+            $result = array(
+                "chargeId" => $chargesMap
+            );
+        }
+        // return $response['payment']['charges'][0]['chargeId'];
+        $result["response"] = $response;
+        return $result;
     }
 
     /*
@@ -719,7 +822,7 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
         if ($method == "POST" || $method == "PUT") {
             curl_setopt($oCurl, CURLOPT_POSTFIELDS, $bodyParams);
         }
-        // print_r(curl_getinfo($oCurl));
+
         $result = curl_exec($oCurl);
 
         $info = curl_getinfo($oCurl);

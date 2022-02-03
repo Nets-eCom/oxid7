@@ -108,6 +108,24 @@ class netsOrder extends netsOrder_parent
                     nets_log::log($this->_nets_log, " payment api status netsOrder, response checkout url", $response['payment']['checkout']['url']);
                     nets_log::log($this->_nets_log, " refupdate netsOrder, response", $refUpdate);
                     $this->getCurlResponse($this->getUpdateRefUrl($paymentId), 'PUT', json_encode($refUpdate));
+
+                    if ($this->getConfig()->getConfigParam('nets_autocapture')) {
+                        $chargeResponse = $this->getCurlResponse($this->getApiUrl() . $paymentId, 'GET');
+                        $api_ret = json_decode($chargeResponse, true);
+
+                        if (isset($api_ret)) {
+                            foreach ($api_ret['payment']['charges'] as $ky => $val) {
+                                foreach ($val['orderItems'] as $key => $value) {
+                                    if (isset($val['chargeId'])) {
+                                        $oDB = oxDb::getDb(true);
+                                        $charge_query = "INSERT INTO `oxnets` (`transaction_id`, `charge_id`,  `product_ref`, `charge_qty`, `charge_left_qty`) " . "values ('" . $paymentId . "', '" . $val['chargeId'] . "', '" . $value['reference'] . "', '" . $value['quantity'] . "', '" . $value['quantity'] . "')";
+                                        $oDB->Execute($charge_query);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     oxRegistry::getUtils()->redirect($this->getConfig()
                         ->getSslShopUrl() . 'index.php?cl=thankyou');
                 } else {
@@ -130,7 +148,8 @@ class netsOrder extends netsOrder_parent
         return [
             "Content-Type: " . self::RESPONSE_TYPE,
             "Accept: " . self::RESPONSE_TYPE,
-            "Authorization: " . $this->getSecretKey()
+            "Authorization: " . $this->getSecretKey(),
+            "commercePlatformTag: " . "Oxid6"
         ];
     }
 
@@ -383,7 +402,6 @@ class netsOrder extends netsOrder_parent
         }
 
         $sumAmt = $sumAmt + $wrapCost + $greetCardAmt + $shipCostAmt + $payCostAmt;
-        // print_r($items);
 
         $oDelAd = $oOrder->getDelAddressInfo();
         if ($oDelAd) {
@@ -434,7 +452,7 @@ class netsOrder extends netsOrder_parent
         if ($this->getConfig()->getConfigParam('nets_checkout_mode') == 'embedded') {
             $data['checkout']['url'] = urldecode(oxRegistry::getConfig()->getShopUrl() . 'index.php?cl=thankyou');
         } else {
-            $data['checkout']['returnUrl'] = urldecode(oxRegistry::getConfig()->getShopUrl() . 'index.php?cl=thankyou&paymentid=' . $paymentId);
+            $data['checkout']['returnUrl'] = urldecode(oxRegistry::getConfig()->getShopUrl() . 'index.php?cl=order&fnc=returnhosted&paymentid=' . $paymentId);
             $data['checkout']['cancelUrl'] = urldecode(oxRegistry::getConfig()->getShopUrl() . 'index.php?cl=order');
         }
 
@@ -472,14 +490,13 @@ class netsOrder extends netsOrder_parent
         }
 
         try {
-            $params['headers']['commercePlatformTag'] = "Oxid6";
-            nets_log::log($this->_nets_log, "netsOrder, api request data here 2 : ", json_encode(utf8_ensure($params)));
+            nets_log::log($this->_nets_log, "netsOrder, api request data here 2 : ", json_encode(utf8_ensure($data)));
             $api_return = $this->getCurlResponse($apiUrl, 'POST', json_encode($data));
             $response = json_decode($api_return, true);
 
             nets_log::log($this->_nets_log, "netsOrder, api return data create trans: ", json_decode($api_return, true));
             // create entry in oxnets table for transaction
-            nets_table::createTransactionEntry(json_encode(utf8_ensure($params)), $api_return, $this->getOrderId(), $response['paymentId'], $oID, intval(strval($oBasket->getPrice()->getBruttoPrice() * 100)));
+            nets_table::createTransactionEntry(json_encode(utf8_ensure($data)), $api_return, $this->getOrderId(), $response['paymentId'], $oID, intval(strval($oBasket->getPrice()->getBruttoPrice() * 100)));
 
             // Set language for hosted payment page
             $language = oxRegistry::getLang()->getLanguageAbbr();
@@ -515,6 +532,8 @@ class netsOrder extends netsOrder_parent
             }
 
             if ($integrationType == self::HOSTED) {
+
+                // charge entry for database
                 oxRegistry::getUtils()->redirect($response["hostedPaymentPageUrl"] . "&language=$lang");
             } else {
                 $this->getSession()->setVariable('payment_id', $response['paymentId']);
@@ -532,6 +551,32 @@ class netsOrder extends netsOrder_parent
             oxRegistry::getUtils()->redirect($this->getConfig()
                 ->getSslShopUrl() . 'index.php?cl=order');
         }
+    }
+
+    /* function to get return data after hosted payment checkout is done */
+    public function returnhosted()
+    {
+        $paymentId = oxRegistry::getConfig()->getRequestParameter('paymentid');
+
+        if ($this->getConfig()->getConfigParam('nets_autocapture')) {
+            $chargeResponse = $this->getCurlResponse($this->getApiUrl() . $paymentId, 'GET');
+            $api_ret = json_decode($chargeResponse, true);
+
+            if (isset($api_ret)) {
+                foreach ($api_ret['payment']['charges'] as $ky => $val) {
+                    foreach ($val['orderItems'] as $key => $value) {
+                        if (isset($val['chargeId'])) {
+                            $oDB = oxDb::getDb(true);
+                            $charge_query = "INSERT INTO `oxnets` (`transaction_id`, `charge_id`,  `product_ref`, `charge_qty`, `charge_left_qty`) " . "values ('" . $paymentId . "', '" . $val['chargeId'] . "', '" . $value['reference'] . "', '" . $value['quantity'] . "', '" . $value['quantity'] . "')";
+                            $oDB->Execute($charge_query);
+                        }
+                    }
+                }
+            }
+        }
+
+        oxRegistry::getUtils()->redirect($this->getConfig()
+            ->getSslShopUrl() . 'index.php?cl=thankyou&paymentid=' . $paymentId);
     }
 
     /*
@@ -705,6 +750,7 @@ class netsOrder extends netsOrder_parent
         if ($method == "POST" || $method == "PUT") {
             curl_setopt($oCurl, CURLOPT_POSTFIELDS, $bodyParams);
         }
+        nets_log::log($this->_nets_log, "netsOrder Curl request headers," . json_encode($this->getHeaders()));
 
         $result = curl_exec($oCurl);
 

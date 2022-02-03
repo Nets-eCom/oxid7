@@ -6,10 +6,13 @@
 |Author       | `Nets eCom`
 |Prefix       | `EASY-OX6`
 |Shop Version | `6+`
-|Version      | `1.1.0`
-|Guide        | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-oxid/
-|Github       | https://github.com/Nets-eCom/oxid6_easy
+|Version      | `1.2.0`
+|Guide        | https://tech.nets.eu/shopmodules
+|Github       | https://github.com/DIBS-Payment-Services/oxid6_easy
 
+### :memo: *NOTE* :
+##### 1. After version update, we advise to deactivate and reactivate extension again.
+##### 2. This version upgrade contains significant changes that can prevent charges/refunds on past transactions. Shall you experience any issue with charges/refunds from Oxid Admin Panel, we advise to proceed to charges/refunds directly from the Easy portal.
 
 ## INSTALLATION
 * See our user guide with illustrations in /nets/docs/Oxid_guide_Nets.pdf
