@@ -7,7 +7,7 @@
 |Prefix       | `EASY-OX6`
 |Shop Version | `6+`
 |Version      | `1.2.0`
-|Guide        | https://tech.nets.eu/shopmodules
+|Guide        | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-oxid/
 |Github       | https://github.com/DIBS-Payment-Services/oxid6_easy
 
 ### :memo: *NOTE* :
