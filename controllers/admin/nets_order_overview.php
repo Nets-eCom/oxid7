@@ -62,7 +62,7 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
             ]);
 
             // Get nets payment db status from oxnets if cancelled
-            $sSQL_select = "SELECT payment_status FROM oxnets WHERE oxorder_id = ? LIMIT 1";
+            $sSQL_select = "SELECT payment_status FROM oxnets WHERE oxorder_id = ? ORDER BY oxnets_id DESC LIMIT 1";
             $payStatusDb = $oDB->getOne($sSQL_select, [
                 $oxoder_id
             ]);
@@ -701,7 +701,7 @@ class Nets_Order_Overview extends Nets_Order_Overview_parent
     public function getPaymentId($oxoder_id)
     {
         $oDB = oxDb::getDb(true);
-        $sSQL_select = "SELECT transaction_id FROM oxnets WHERE oxorder_id = ? LIMIT 1";
+        $sSQL_select = "SELECT transaction_id FROM oxnets WHERE oxorder_id = ? ORDER BY oxnets_id DESC LIMIT 1";
         $payment_id = $oDB->getOne($sSQL_select, [
             $oxoder_id
         ]);

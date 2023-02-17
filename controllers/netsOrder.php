@@ -58,87 +58,100 @@ class netsOrder extends netsOrder_parent
      */
     public function execute()
     {
-        nets_log::log($this->_nets_log, "netsOrder, execute");
-        $oBasket = $this->getSession()->getBasket();
-        $oUser = $this->getUser();
-        if (! $oUser) {
-            return 'user';
-        }
-        if ($oBasket->getProductsCount()) {
-            try {
-                if ($this->is_embedded()) {
-                    $sess_id = $this->getSession()->getVariable('sess_challenge');
-                    $oDB = oxDb::getDb(true);
-                    $sSQL_select = "SELECT oxorder_id FROM oxnets WHERE oxorder_id = ? LIMIT 1";
-                    $order_id = $oDB->getOne($sSQL_select, [
-                        $sess_id
-                    ]);
-                    if (! empty($order_id)) {
-                        $orderId = \OxidEsales\Eshop\Core\UtilsObject::getInstance()->generateUID();
-                        // $this->save();
-                        \OxidEsales\Eshop\Core\Registry::getSession()->setVariable("sess_challenge", $orderId);
-                    }
+        $oxSession = \oxNew(\OxidEsales\EshopCommunity\Core\Session::class);
+        if ($oxSession->getVariable("paymentid") == "nets_easy") {
+       
+            nets_log::log($this->_nets_log, "netsOrder, execute");
+            $oBasket = $this->getSession()->getBasket();
+            $oUser = $this->getUser();
+            if (! $oUser) {
+                return 'user';
+            }
+            if ($oBasket->getProductsCount()) {
+                try {
+                    if ($this->is_embedded()) {
+                        $sess_id = $this->getSession()->getVariable('sess_challenge');
+                        $oDB = oxDb::getDb(true);
+                        $sSQL_select = "SELECT oxorder_id FROM oxnets WHERE oxorder_id = ? LIMIT 1";
+                        $order_id = $oDB->getOne($sSQL_select, [
+                            $sess_id
+                        ]);
+                        if (! empty($order_id)) {
+                            $orderId = \OxidEsales\Eshop\Core\UtilsObject::getInstance()->generateUID();
+                            // $this->save();
+                            \OxidEsales\Eshop\Core\Registry::getSession()->setVariable("sess_challenge", $orderId);
+                        }
 
-                    // finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
-                    $oOrder = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
-                    $iSuccess = $oOrder->finalizeOrder($oBasket, $oUser);
-                    $orderNr = $oOrder->oxorder__oxordernr->value;
-                    $paymentId = $this->getSession()->getVariable('payment_id');
-                    $this->getSession()->setVariable('orderNr', $orderNr);
-                    nets_log::log($this->_nets_log, " refupdate netsOrder, order nr", $oOrder->oxorder__oxordernr->value);
-                    $oDb = oxDb::getDb();
+                        // finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
+                        $oOrder = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+                        
+                        $orderNr = $oOrder->oxorder__oxordernr->value;
+                        $paymentId = $this->getSession()->getVariable('payment_id');
+                        $this->getSession()->setVariable('orderNr', $orderNr);
+                        nets_log::log($this->_nets_log, " refupdate netsOrder, order nr", $oOrder->oxorder__oxordernr->value);
+                        $oDb = oxDb::getDb();
 
-                    $oDb->execute("UPDATE oxnets SET oxordernr = ?,  hash = ?, oxorder_id = ? WHERE transaction_id = ? ", [
-                        $orderNr,
-                        $this->getSession()
-                            ->getVariable('sess_challenge'),
-                        $this->getSession()
-                            ->getVariable('sess_challenge'),
-                        $paymentId
-                    ]);
+                        $oDb->execute("UPDATE oxnets SET oxordernr = ?,  hash = ?, oxorder_id = ? WHERE transaction_id = ? ", [
+                            $orderNr,
+                            $this->getSession()
+                                ->getVariable('sess_challenge'),
+                            $this->getSession()
+                                ->getVariable('sess_challenge'),
+                            $paymentId
+                        ]);
 
-                    $api_return = $this->getCurlResponse($this->getApiUrl() . $paymentId, "GET");
-                    $response = json_decode($api_return, true);
-                    nets_log::log($this->_nets_log, " payment api status netsOrder, response", $response);
-                    $refUpdate = [
-                        'reference' => $orderNr,
-                        'checkoutUrl' => $response['payment']['checkout']['url']
-                    ];
-                    nets_log::log($this->_nets_log, " refupdate netsOrder, order nr", $oOrder->oxorder__oxordernr->value);
-                    nets_log::log($this->_nets_log, " payment api status netsOrder, response checkout url", $response['payment']['checkout']['url']);
-                    nets_log::log($this->_nets_log, " refupdate netsOrder, response", $refUpdate);
-                    $this->getCurlResponse($this->getUpdateRefUrl($paymentId), 'PUT', json_encode($refUpdate));
+                        $api_return = $this->getCurlResponse($this->getApiUrl() . $paymentId, "GET");
+                        $iSuccess = $oOrder->finalizeOrder($oBasket, $oUser);
+                        $response = json_decode($api_return, true);
+                        nets_log::log($this->_nets_log, " payment api status netsOrder, response", $response);
+                        $refUpdate = [
+                            'reference' => $oOrder->oxorder__oxordernr->value,
+                            'checkoutUrl' => $response['payment']['checkout']['url']
+                        ];
+                        nets_log::log($this->_nets_log, " refupdate netsOrder, order nr", $oOrder->oxorder__oxordernr->value);
+                        nets_log::log($this->_nets_log, " payment api status netsOrder, response checkout url", $response['payment']['checkout']['url']);
+                        nets_log::log($this->_nets_log, " refupdate netsOrder, response", $refUpdate);
+                        $this->getCurlResponse($this->getUpdateRefUrl($paymentId), 'PUT', json_encode($refUpdate));
 
-                    if ($this->getConfig()->getConfigParam('nets_autocapture')) {
-                        $chargeResponse = $this->getCurlResponse($this->getApiUrl() . $paymentId, 'GET');
-                        $api_ret = json_decode($chargeResponse, true);
+                        if ($this->getConfig()->getConfigParam('nets_autocapture')) {
+                            $chargeResponse = $this->getCurlResponse($this->getApiUrl() . $paymentId, 'GET');
+                            $api_ret = json_decode($chargeResponse, true);
 
-                        if (isset($api_ret)) {
-                            foreach ($api_ret['payment']['charges'] as $ky => $val) {
-                                foreach ($val['orderItems'] as $key => $value) {
-                                    if (isset($val['chargeId'])) {
-                                        $oDB = oxDb::getDb(true);
-                                        $charge_query = "INSERT INTO `oxnets` (`transaction_id`, `charge_id`,  `product_ref`, `charge_qty`, `charge_left_qty`) " . "values ('" . $paymentId . "', '" . $val['chargeId'] . "', '" . $value['reference'] . "', '" . $value['quantity'] . "', '" . $value['quantity'] . "')";
-                                        $oDB->Execute($charge_query);
+                            if (isset($api_ret)) {
+                                foreach ($api_ret['payment']['charges'] as $ky => $val) {
+                                    foreach ($val['orderItems'] as $key => $value) {
+                                        if (isset($val['chargeId'])) {
+                                            $oDB = oxDb::getDb(true);
+                                            $charge_query = "INSERT INTO `oxnets` (`transaction_id`, `charge_id`,  `product_ref`, `charge_qty`, `charge_left_qty`) " . "values ('" . $paymentId . "', '" . $val['chargeId'] . "', '" . $value['reference'] . "', '" . $value['quantity'] . "', '" . $value['quantity'] . "')";
+                                            $oDB->Execute($charge_query);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    oxRegistry::getUtils()->redirect($this->getConfig()
-                        ->getSslShopUrl() . 'index.php?cl=thankyou');
-                } else {
-                    $this->getPaymentApiResponse();
+                        oxRegistry::getUtils()->redirect($this->getConfig()
+                            ->getSslShopUrl() . 'index.php?cl=thankyou');
+                    } else {
+                        $this->getPaymentApiResponse();
+                    }
+                } catch (\OxidEsales\Eshop\Core\Exception\OutOfStockException $oEx) {
+                    $oEx->setDestination('basket');
+                    Registry::getUtilsView()->addErrorToDisplay($oEx, false, true, 'basket');
+                } catch (\OxidEsales\Eshop\Core\Exception\NoArticleException $oEx) {
+                    Registry::getUtilsView()->addErrorToDisplay($oEx);
+                } catch (\OxidEsales\Eshop\Core\Exception\ArticleInputException $oEx) {
+                    Registry::getUtilsView()->addErrorToDisplay($oEx);
                 }
-            } catch (\OxidEsales\Eshop\Core\Exception\OutOfStockException $oEx) {
-                $oEx->setDestination('basket');
-                Registry::getUtilsView()->addErrorToDisplay($oEx, false, true, 'basket');
-            } catch (\OxidEsales\Eshop\Core\Exception\NoArticleException $oEx) {
-                Registry::getUtilsView()->addErrorToDisplay($oEx);
-            } catch (\OxidEsales\Eshop\Core\Exception\ArticleInputException $oEx) {
-                Registry::getUtilsView()->addErrorToDisplay($oEx);
             }
+       
+        }else{
+            $oxSession = \oxNew(\OxidEsales\EshopCommunity\Core\Session::class);
+            $oxSession->deleteVariable('payment_id');
+            $oxSession->deleteVariable('paymentid');
+            $oxSession->deleteVariable('sess_challenge');
+            $oxSession->deleteVariable('orderNr');
+            return parent::execute();
         }
     }
 
@@ -227,9 +240,15 @@ class netsOrder extends netsOrder_parent
 
         $mySession = $this->getSession();
         $oBasket = $mySession->getBasket();
+        
+        if (isset($oOrder->oxorder__oxordernr->value)) {
+            $orderNr = $oOrder->oxorder__oxordernr->value;
+            $this->getSession()->setVariable('orderNr', $orderNr);
+            $this->getSession()->setVariable('sess_challenge', $oOrder->oxorder__oxid->value);
+        }
 
-        $oID = $this->update_ordernr($this->getSession()
-            ->getVariable('sess_challenge'));
+        $oID = $this->update_ordernr($this->getSession()->getVariable('sess_challenge'));
+
         nets_log::log($this->_nets_log, 'oID: ', $oOrder->oxorder__oxordernr->value);
 
         // if oID is empty, use session value
@@ -238,6 +257,7 @@ class netsOrder extends netsOrder_parent
             $oID = $sGetChallenge;
             nets_log::log($this->_nets_log, "netsOrder, get oID from Session: ", $oID);
         }
+        
 
         nets_log::log($this->_nets_log, 'oID: ', $oID);
         $modus = $this->getConfig()->getConfigParam('nets_blMode');
@@ -388,7 +408,7 @@ class netsOrder extends netsOrder_parent
 
             $items[] = [
                 'reference' => $item->getArticle()->oxarticles__oxartnum->value,
-                'name' => $item->getArticle()->oxarticles__oxtitle->value,
+                'name' => substr($item->getArticle()->oxarticles__oxtitle->value, 0, 128),
                 'quantity' => $quantity,
                 'unit' => 'pcs',
                 'unitPrice' => $unitPrice,
@@ -496,7 +516,11 @@ class netsOrder extends netsOrder_parent
 
             nets_log::log($this->_nets_log, "netsOrder, api return data create trans: ", json_decode($api_return, true));
             // create entry in oxnets table for transaction
-            nets_table::createTransactionEntry(json_encode(utf8_ensure($data)), $api_return, $this->getOrderId(), $response['paymentId'], $oID, intval(strval($oBasket->getPrice()->getBruttoPrice() * 100)));
+            
+          
+            
+            nets_table::createTransactionEntry(json_encode(utf8_ensure($data)), $api_return,  $this->getSession()->getVariable('sess_challenge'), $response['paymentId'], $oID, intval(strval($oBasket->getPrice()->getBruttoPrice() * 100)));
+            
 
             // Set language for hosted payment page
             $language = oxRegistry::getLang()->getLanguageAbbr();
@@ -557,8 +581,39 @@ class netsOrder extends netsOrder_parent
     public function returnhosted()
     {
         $paymentId = oxRegistry::getConfig()->getRequestParameter('paymentid');
+        
+        $oUser = $this->getUser();
+        $oxSession = \oxNew(\OxidEsales\EshopCommunity\Core\Session::class);
+        $oxBasket = $oxSession->getBasket();
+        $oOrder = \oxNew(\OxidEsales\EshopCommunity\Application\Model\Order::class);
+        
+        $oxSession->setVariable('paymentid',$paymentId);
+        $oxSession->setVariable('payment_id',$paymentId);
 
-        if ($this->getConfig()->getConfigParam('nets_autocapture')) {
+        
+        if ($oxBasket->getProductsCount()) {
+            // finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
+            $sDeliveryAddress = $oUser->getEncodedDeliveryAddress();
+            $_POST['sDeliveryAddressMD5'] = $sDeliveryAddress;
+            $success = $oOrder->finalizeOrder($oxBasket, $oUser);
+            
+            $api_return = $this->getCurlResponse($this->getApiUrl() . $paymentId, "GET");
+            $response = json_decode($api_return, true);
+            $orderNr = $oOrder->oxorder__oxordernr->value;
+            $refUpdate = [
+                'reference' => $orderNr,
+                'checkoutUrl' => $response['payment']['checkout']['url']
+            ];
+            nets_log::log($this->_nets_log, " hosted return refupdate netsOrder, order nr", $oOrder->oxorder__oxordernr->value);
+            nets_log::log($this->_nets_log, " hosted return payment api status netsOrder, response checkout url", $response['payment']['checkout']['url']);
+            nets_log::log($this->_nets_log, " hosted return refupdate netsOrder, response", $refUpdate);
+            $this->getCurlResponse($this->getUpdateRefUrl($paymentId), 'PUT', json_encode($refUpdate));
+
+            // $oUser->onOrderExecute($oxBasket, $success);
+        }
+
+
+        // if ($this->getConfig()->getConfigParam('nets_autocapture')) {
             $chargeResponse = $this->getCurlResponse($this->getApiUrl() . $paymentId, 'GET');
             $api_ret = json_decode($chargeResponse, true);
 
@@ -573,7 +628,7 @@ class netsOrder extends netsOrder_parent
                     }
                 }
             }
-        }
+        // }
 
         oxRegistry::getUtils()->redirect($this->getConfig()
             ->getSslShopUrl() . 'index.php?cl=thankyou&paymentid=' . $paymentId);
@@ -704,16 +759,21 @@ class netsOrder extends netsOrder_parent
         if ($oBasket->getProductsCount()) {
             $oOrder = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
 
+            
             // finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
-            $iSuccess = $oOrder->finalizeOrder($oBasket, $oUser);
+            // nets_log::log(true, "finalizeOrder hosted ");
+            // $iSuccess = $oOrder->finalizeOrder($oBasket, $oUser);
+
+            // nets_log::log(true, "finalizeOrder response ".$iSuccess);
 
             // performing special actions after user finishes order (assignment to special user groups)
-            $oUser->onOrderExecute($oBasket, $iSuccess);
+            // $oUser->onOrderExecute($oBasket, $iSuccess);
 
             $response = $this->createNetsTransaction($oOrder);
             return $response;
         }
     }
+
 
     public function getPaymentId($oxoder_id)
     {

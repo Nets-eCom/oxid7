@@ -17,7 +17,7 @@ class netsPayment extends netsPayment_parent
 		$this->getSession()->deleteVariable('nets_err_msg');
 		$this->_nets_log = $this->getConfig()->getConfigParam('nets_blDebug_log');
 		$this->getNetsPaymentTypes();
-		$this->_sThisTemplate = parent::render();
+		// $this->_sThisTemplate = parent::render();
 		parent::init();
 	}
 

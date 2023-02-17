@@ -6,11 +6,14 @@
 |Author       | `Nets eCom`
 |Prefix       | `EASY-OX6`
 |Shop Version | `6+`
-|Version      | `1.2.0`
+|Version      | `1.2.1`
 |Guide        | https://tech.nets.eu/shopmodules
 |Github       | https://github.com/DIBS-Payment-Services/oxid6_easy
 
 ## CHANGELOG
+
+### Version 1.2.1 - Released 2023-02-17
+* Fixed : functionality enhancements and Minor bug fixes
 
 ### Version 1.2.0 - Released 2022-02-03
 * Fixed : Capture/Refund functionality enhancements and Minor bug fixes
