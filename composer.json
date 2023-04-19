@@ -1,5 +1,5 @@
 {
-  "name": "nexi/oxid6_easy",
+  "name": "nexi-ecom/oxid6_easy",
   "description": "Nexi Payment Module for Oxid 6",
   "type": "oxideshop-module",
   "keywords": ["oxid", "modules", "eShop"],
