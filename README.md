@@ -14,12 +14,14 @@
 ##### 1. After version update, we advise to deactivate and reactivate extension again.
 ##### 2. This version upgrade contains significant changes that can prevent charges/refunds on past transactions. Shall you experience any issue with charges/refunds from Oxid Admin Panel, we advise to proceed to charges/refunds directly from the Easy portal.
 
+##### 3. If you face any issues with the latest version, you can use the previous version 1.2.1 
+
 
 
 ### Download / Installation
 1] Install Nets Plugin:
 
-    Run command: composer require nets-ecom/oxid6_netseasy_beta    
+    Run command: composer require nexi-ecom/oxid6_easy   
 
 2] Activate the Nets module:
 
