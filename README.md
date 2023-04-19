@@ -1,4 +1,4 @@
-# NETS A/S - Oxid 6 Payment Module
+# NETS A/S - Oxid 6 Payment Module 
 ==============================================================
 
 |Module       | Nets Easy Payment Module for Oxid 6
@@ -6,25 +6,29 @@
 |Author       | `Nets eCom`
 |Prefix       | `EASY-OX6`
 |Shop Version | `6+`
-|Version      | `1.2.1`
-|Guide        | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-oxid/
-|Github       | https://github.com/DIBS-Payment-Services/oxid6_easy
+|Version      | `2.0.0`
+|Guide        | https://tech.nets.eu/shopmodules
+|Github       | https://github.com/Nets-eCom/oxid6_easy
 
 ### :memo: *NOTE* :
 ##### 1. After version update, we advise to deactivate and reactivate extension again.
 ##### 2. This version upgrade contains significant changes that can prevent charges/refunds on past transactions. Shall you experience any issue with charges/refunds from Oxid Admin Panel, we advise to proceed to charges/refunds directly from the Easy portal.
 
-## INSTALLATION
-* See our user guide with illustrations in /nets/docs/Oxid_guide_Nets.pdf
+
 
 ### Download / Installation
-* Method 1
-1. Unzip and upload the plugin folder nets manually to root /source/modules.
-2. Clear your cache by 3.rd party plugin or simply delete all files in the folder root /source/tmp.
-   IMPORTANT : do not delete the .htaccess file or the smarty folder but only its content.
-3. Connect with a SSH client and navigate to root directory of your Oxid 6 installation and run command :
-   php vendor/bin/oe-console oe:module:install-configuration source/modules/nets
+1] Install Nets Plugin:
 
+    Run command: composer require nets-ecom/oxid6_netseasy_beta    
+
+2] Activate the Nets module:
+
+    vendor/bin/oe-console oe:module:install ./source/modules/es/esnetseasy
+    vendor/bin/oe-console oe:module:activate esnetseasy
+    vendor/bin/oe-console oe:module:install-configuration ./source/modules/es/esnetseasy
+    vendor/bin/oe-console oe:module:apply-configuration
+
+    
 ### Configuration
 1. To configure and setup the plugin navigate to : Admin > Extensions > Modules
 2. Locate and select Nets Easy plugin from the list of installed plugins.
@@ -39,7 +43,30 @@
    Admin > Extensions > Modules > Nets Easy
 9. Select the Settings tab and press on Nets Easy settings to reveal the content of configuration settings.
 
-* Nets plugin configuration settings
+
+### Configuration for split payment methods
+You can either activate the Nets Easy Payment Method, which allows the user to choose all payment methods that are enabled for you, or you can activate individual payment methods.
+To configure individual payment methods, go to Admin > Shop Settings > Payment Methods.
+There you can see a list of all of the Nets payment methods that you can activate.
+> Note: Be careful while activating the payment method. You have to enable only those payment methods that are enabled for you. If you activate a payment method that is not enabled for you, then the user will not be able to complete the transaction.
+>>if you don't want to enable the individual payment method, you can simply activate the "Nets Easy" payment method. It shows all payment options to the user in the Nets payment window that are enabled for you.
+
+
+
+
+
+ Steps to activate an individual payment method: Here we are activating the "Nets Easy - Cards" payment method.
+1. Go to  Admin > Shop Settings > Payment Methods. There, you can see the payment method "Nets Easy - Cards"
+2. To activate that payment method, click on it, then go to the main tab and check the Activate box and click on Save.
+3. Once you activate that payment method, assign user groups and countries.
+4. You can assign the payment method to specific shipping methods. To configure that, go to Admin > Shop Settings > Shipping Methods.
+
+Here, you can see a list of all shipping methods. Select the shipping method for which you want to add it above the payment method. Then go to the Payment tab of the shipping method, where you can assign a payment method by simply dragging and dropping. 
+
+
+
+
+### Nets plugin configuration settings
 1. Mode. Select between Test/Live transactions. Live mode requires an approved account.
    Testcard information can be found here : https://tech.dibspayment.com/easy/test-information
 2. Test / Live keys. Login to your Nets Easy account. Keys can be found in Company > Integration : https://portal.dibspayment.eu/

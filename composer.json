@@ -1,9 +1,24 @@
 {
-	"name": "nets/netseasyoxid6",
-	"version": "1.2.1",
-	"description": "Nets Easy Checkout module for oxid 6",
-	"homepage": "https://nets.eu",
-	"require": {
-		"php": ">=7.0"
-	}
+  "name": "nexi/oxid6_easy",
+  "description": "Nexi Payment Module for Oxid 6",
+  "type": "oxideshop-module",
+  "keywords": ["oxid", "modules", "eShop"],
+  "homepage": "https://www.nets.eu/",
+  "version":"2.0.0",
+  "license": [
+    "AGPL-3.0-or-later"
+  ],
+  "extra": {
+    "oxideshop": {
+      "target-directory": "es/esnetseasy"
+    }
+  },
+  "require": {
+    "php": ">=7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Es\\NetsEasy\\": "../../../source/modules/es/esnetseasy"
+    }
+  }
 }

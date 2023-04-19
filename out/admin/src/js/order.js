@@ -8,7 +8,7 @@ $(function() {
 		var $curr = $(this).find(".currency").val();
 		var $plu = $(this).find(".plus");
 		var $minu = $(this).find(".minus");
-		$(this).find('.priceblk').html(parseFloat($qty*$price).toFixed(2) + ' ' + $curr);
+		// $(this).find('.priceblk').html(parseFloat($qty*$price).toFixed(2) + ' ' + $curr);
 		if ($quan == $tep) { 
 			$minu.addClass('is-disabled');
 			$('.single.qty.value').addClass('is-disabled'); 
@@ -25,7 +25,7 @@ $(function() {
 		var $quan = $(this).find(".quant").val();
 		var $price = $(this).find(".price").val();
 		var $curr = $(this).find(".currency").val();
-		$(this).find('.result').html(parseFloat($quan*$price).toFixed(2) + ' ' + $curr);
+		// $(this).find('.result').html(parseFloat($quan*$price).toFixed(2) + ' ' + $curr);
 	});
 });
 
@@ -85,7 +85,7 @@ $(".quantity").on('click', '.plus, .minus', function () {
 			$qty.val(max);
 			$('#item_'+ref).val(max);
 			$('#price_'+ref).text(parseFloat(max*price).toFixed(2) + ' ' + currency);
-			plus.addClass('is-disabled');
+			plus.addClass('is-disabled'); 
 		} else {
 			currentInput++;
 			$qty.val(currentInput);
@@ -100,9 +100,7 @@ $(".quantity").on('click', '.plus, .minus', function () {
 			$('#item_'+ref).val(min);
 			$('#price_'+ref).text(parseFloat(min*price).toFixed(2) + ' ' + currency);
 			minus.addClass('is-disabled');
-		} 
-		else if (currentInput > 0) 
-		{
+		} else if (currentInput > 0) {
 			currentInput--;
 			$qty.val(currentInput);
 			$('#item_'+ref).val(currentInput);
