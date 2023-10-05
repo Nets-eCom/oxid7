@@ -3,8 +3,8 @@
   "description": "Nexi Payment Module for Oxid 6",
   "type": "oxideshop-module",
   "keywords": ["oxid", "modules", "eShop"],
-  "homepage": "https://www.nets.eu/",
-  "version":"2.0.0",
+  "homepage": "https://ecom.nets.eu/",
+  "version":"2.0.1",
   "license": [
     "AGPL-3.0-or-later"
   ],

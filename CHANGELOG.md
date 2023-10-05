@@ -6,11 +6,14 @@
 |Author       | `Nets eCom`
 |Prefix       | `EASY-OX6`
 |Shop Version | `6+`
-|Version      | `2.0.0`
-|Guide        | https://tech.nets.eu/shopmodules
-|Github       | https://github.com/DIBS-Payment-Services/oxid6_easy
+|Version      | `2.0.1`
+|Guide        | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/nexi-checkout-for-oxid/
+|Github       | https://github.com/Nets-eCom/oxid6_easy
 
 ## CHANGELOG
+
+### Version 2.0.1 - Released 2023-10-05
+* Update : backwards compatibility of OXID 6.4 
 
 ### Version 2.0.0 - Released 2023-04-19
 * Fixed : split payment 
@@ -22,7 +25,7 @@
 * Fixed : Change in http library. 
 
 ### Version 1.0.1 - Released 2021-07-16
-* Added : Headers modified for platform tag
+* Update : Headers modified for platform tag
 
 ### Version 1.0.0 - Released 2021-06-30
 * New : Nets Easy plugin release

@@ -6,7 +6,7 @@
 |Author       | `Nets eCom`
 |Prefix       | `EASY-OX6`
 |Shop Version | `6+`
-|Version      | `2.0.0`
+|Version      | `2.0.1`
 |Guide        | https://tech.nets.eu/shopmodules
 |Github       | https://github.com/Nets-eCom/oxid6_easy
 
@@ -110,11 +110,10 @@ Here, you can see a list of all shipping methods. Select the shipping method for
 
 * How do I choose currency or language in the payment window?
 - Currency and Language is based on customers selection on the frontend shop page.
-- A complete list of supported currencies and languages can be found here :
-  https://tech.dibspayment.com/easy/integration-guide
+- A complete list of supported currencies and languages can be found [here](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/nexi-checkout-for-oxid/)
 
 ### Contact
 * Nets customer service
-- Nets Easy provides support for both test and live Easy accounts. Contact information can be found here : https://nets.eu/en/payments/customerservice/
+- Nets Easy provides support for both test and live Easy accounts. Contact information can be found [here](https://developer.nexigroup.com/nexi-checkout/en-EU/support/)
 
 ** CREATE YOUR FREE NETS EASY TEST ACCOUNT HERE : https://portal.dibspayment.eu/registration **
