@@ -58,10 +58,10 @@ class PaymentCreate extends \Es\NetsEasy\Application\Model\Api\OrderItemRequest
                 'country'      => $this->getCountryCodeById(!empty($oOrder->oxorder__oxdelcountryid->value) ? $oOrder->oxorder__oxdelcountryid->value : $oOrder->oxorder__oxbillcountryid->value),
             ],
         ];
-        
+
         $telephone = $oUser->oxuser__oxfon->value;
         $cellphone = $oUser->oxuser__oxmobfon->value;
-        
+
         $phonenumber = '';
         if (!empty($telephone)) {
             $phonenumber = $telephone;
@@ -70,9 +70,10 @@ class PaymentCreate extends \Es\NetsEasy\Application\Model\Api\OrderItemRequest
         }
 
         if (!empty($phonenumber)) {
-            $countrylist = Countrylist::getList();
+            $oCountrylist = oxNew(Countrylist::class);
+            $countrylist = $oCountrylist->getList();
             $local = $countrylist[$this->getCountryCodeById(!empty($oOrder->oxorder__oxdelcountryid->value) ? $oOrder->oxorder__oxdelcountryid->value : $oOrder->oxorder__oxbillcountryid->value)];
-           
+
             if (isset($local)) {
                 $prefix ='+'.$local['phone'];
                 $replace_array =array('/','-',' ',$prefix);

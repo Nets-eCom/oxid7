@@ -2,8 +2,7 @@
 
 namespace Es\NetsEasy\extend\Application\Model;
 
-use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
-use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
+use Es\NetsEasy\Compatibility\BackwardsCompatibilityHelper;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Field;
 use Es\NetsEasy\Application\Model\Api\Payment\ChargeRefund;
@@ -84,7 +83,7 @@ class Order extends Order_parent
      */
     public function netsSetTransactionId($sTransactionId)
     {
-        $oQueryBuilder = ContainerFactory::getInstance()->getContainer()->get(QueryBuilderFactoryInterface::class)->create();
+        $oQueryBuilder = $this->getQueryBuilder();
         $oQueryBuilder->update('oxorder')
             ->set('oxtransid', ':transId')
             ->where('oxid = :orderId')
@@ -110,7 +109,7 @@ class Order extends Order_parent
             $sDate = date('Y-m-d H:i:s');
         }
 
-        $oQueryBuilder = ContainerFactory::getInstance()->getContainer()->get(QueryBuilderFactoryInterface::class)->create();
+        $oQueryBuilder = $this->getQueryBuilder();
         $oQueryBuilder->update('oxorder')
             ->set('oxpaid', ':paidDate')
             ->where('oxid = :orderId')
@@ -431,5 +430,15 @@ class Order extends Order_parent
             return parent::_executePayment($oBasket, $oUserpayment);
         }
         return true;
+    }
+
+    /**
+     * Returns a new QueryBuilder object
+     *
+     * @return \Doctrine\DBAL\Query\QueryBuilder
+     */
+    protected function getQueryBuilder()
+    {
+        return BackwardsCompatibilityHelper::getQueryBuilder();
     }
 }

@@ -9,8 +9,6 @@ use Es\NetsEasy\Application\Model\Api\Payment\PaymentRetrieve;
 use Es\NetsEasy\Application\Model\Api\Payment\ReferenceInformationUpdate;
 use Es\NetsEasy\Application\Model\ResourceModel\NetsTransactions;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
-use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidEsales\Eshop\Application\Model\Order;
 use Es\NetsEasy\Application\Helper\Payment;
 

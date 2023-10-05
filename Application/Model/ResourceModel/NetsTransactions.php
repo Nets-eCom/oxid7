@@ -2,8 +2,7 @@
 
 namespace Es\NetsEasy\Application\Model\ResourceModel;
 
-use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
-use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
+use Es\NetsEasy\Compatibility\BackwardsCompatibilityHelper;
 
 class NetsTransactions
 {
@@ -24,7 +23,7 @@ class NetsTransactions
      */
     protected static function getQueryBuilder()
     {
-        return ContainerFactory::getInstance()->getContainer()->get(QueryBuilderFactoryInterface::class)->create();
+        return BackwardsCompatibilityHelper::getQueryBuilder();
     }
 
     /**
@@ -105,7 +104,9 @@ class NetsTransactions
             ->from(self::$sTableName)
             ->where('oxorder_id = :orderId')
             ->setParameter('orderId', $sOrderId);
-        return $queryBuilder->execute()->fetchOne();
+        $result = $queryBuilder->execute();
+
+        return BackwardsCompatibilityHelper::fetchOne($result, 'transaction_id');
     }
 
     /**
@@ -210,7 +211,9 @@ class NetsTransactions
             ->from(self::$sTableName)
             ->where('oxorder_id = :orderId')
             ->setParameter('orderId', $sOrderId);
-        return $queryBuilder->execute()->fetchOne();
+        $result = $queryBuilder->execute();
+
+        return BackwardsCompatibilityHelper::fetchOne($result, 'payment_status');
     }
 
     /**

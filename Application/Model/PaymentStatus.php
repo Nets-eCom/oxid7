@@ -4,9 +4,8 @@ namespace Es\NetsEasy\Application\Model;
 
 use Es\NetsEasy\Application\Model\Api\Payment\PaymentRetrieve;
 use Es\NetsEasy\Application\Model\ResourceModel\NetsTransactions;
+use Es\NetsEasy\Compatibility\BackwardsCompatibilityHelper;
 use OxidEsales\Eshop\Application\Model\Order;
-use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
-use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 
 /**
  * Class defines Nets payment status
@@ -20,10 +19,7 @@ class PaymentStatus
      */
     protected function getQueryBuilder()
     {
-        return ContainerFactory::getInstance()
-            ->getContainer()
-            ->get(QueryBuilderFactoryInterface::class)
-            ->create();
+        return BackwardsCompatibilityHelper::getQueryBuilder();
     }
 
     /**

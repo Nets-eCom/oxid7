@@ -19,12 +19,11 @@ use Es\NetsEasy\Application\Helper\DebugLog;
  */
 class Events
 {
-
     /**
      * Function to execute action on activate event
      * @return void
      */
-    static function onActivate()
+    public static function onActivate()
     {
         self::executeModuleMigrations();
         self::addPaymentMethods();
@@ -34,7 +33,7 @@ class Events
      * Function to execute action on deactivate event
      * @return void
      */
-    static function onDeactivate()
+    public static function onDeactivate()
     {
         self::executeModuleMigrations();
     }
@@ -43,7 +42,7 @@ class Events
      * Execute necessary module migrations on activate event
      * @return void
      */
-    static function executeModuleMigrations()
+    protected static function executeModuleMigrations()
     {
         $migrations = (new MigrationsBuilder())->build();
         $output = new BufferedOutput();
@@ -58,7 +57,7 @@ class Events
      * Add necessary payment method on activate event
      * @return void
      */
-    static function addPaymentMethods()
+    protected static function addPaymentMethods()
     {
         DebugLog::getInstance()->log("addPaymentMethods called");
         
@@ -73,7 +72,6 @@ class Events
             $sPaymentOxid = $queryBuilder->execute()->fetchOne();
 
             if (empty($sPaymentOxid)) {
-
                 DebugLog::getInstance()->log("payment method added for : ".json_encode($aPaymentType));
                 //create payment
                 $sDesc = $aPaymentType['descEN'];
@@ -111,9 +109,6 @@ class Events
                         ->execute();
                 }
             }
-
         }
     }
-
-
 }

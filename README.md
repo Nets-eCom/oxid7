@@ -14,22 +14,17 @@
 ##### 1. After version update, we advise to deactivate and reactivate extension again.
 ##### 2. This version upgrade contains significant changes that can prevent charges/refunds on past transactions. Shall you experience any issue with charges/refunds from Oxid Admin Panel, we advise to proceed to charges/refunds directly from the Easy portal.
 
-##### 3. If you face any issues with the latest version, you can use the previous version 1.2.1 
-
 
 
 ### Download / Installation
 1] Install Nets Plugin:
 
-    Run command: composer require nexi-ecom/oxid6_easy   
+    Run command: composer require nexi-ecom/oxid6_easy    
 
 2] Activate the Nets module:
 
-    vendor/bin/oe-console oe:module:install ./source/modules/es/esnetseasy
     vendor/bin/oe-console oe:module:activate esnetseasy
-    vendor/bin/oe-console oe:module:install-configuration ./source/modules/es/esnetseasy
-    vendor/bin/oe-console oe:module:apply-configuration
-
+    
     
 ### Configuration
 1. To configure and setup the plugin navigate to : Admin > Extensions > Modules
@@ -51,19 +46,20 @@ You can either activate the Nets Easy Payment Method, which allows the user to c
 To configure individual payment methods, go to Admin > Shop Settings > Payment Methods.
 There you can see a list of all of the Nets payment methods that you can activate.
 > Note: Be careful while activating the payment method. You have to enable only those payment methods that are enabled for you. If you activate a payment method that is not enabled for you, then the user will not be able to complete the transaction.
->>if you don't want to enable the individual payment method, you can simply activate the "Nets Easy" payment method. It shows all payment options to the user in the Nets payment window that are enabled for you.
+>
+>If you don't want to enable the individual payment method, you can simply activate the "Nets Easy" payment method. It shows all payment options to the user in the Nets payment window that are enabled for you.
 
 
 
 
 
- Steps to activate an individual payment method: Here we are activating the "Nets Easy - Cards" payment method.
-1. Go to  Admin > Shop Settings > Payment Methods. There, you can see the payment method "Nets Easy - Cards"
+Steps to activate an individual payment method: Here we are activating the "Nets Easy - Cards" payment method.
+1. Go to Admin > Shop Settings > Payment Methods. There, you can see the payment method "Nets Easy - Cards"
 2. To activate that payment method, click on it, then go to the main tab and check the Activate box and click on Save.
 3. Once you activate that payment method, assign user groups and countries.
 4. You can assign the payment method to specific shipping methods. To configure that, go to Admin > Shop Settings > Shipping Methods.
 
-Here, you can see a list of all shipping methods. Select the shipping method for which you want to add it above the payment method. Then go to the Payment tab of the shipping method, where you can assign a payment method by simply dragging and dropping. 
+Here, you can see a list of all shipping methods. Select the shipping method for which you want to add it above the payment method. Then go to the Payment tab of the shipping method, where you can assign a payment method by simply dragging and dropping.
 
 
 
