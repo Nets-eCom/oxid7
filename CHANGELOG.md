@@ -13,7 +13,7 @@
 ## CHANGELOG
 
 ### Version 2.0.1 - Released 2023-10-05
-* Update : backwards compatibility of OXID 6.4 
+* Update : backwards compatibility of OXID 6.1 
 
 ### Version 2.0.0 - Released 2023-04-19
 * Fixed : split payment 
