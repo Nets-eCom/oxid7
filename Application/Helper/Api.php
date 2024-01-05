@@ -1,9 +1,12 @@
 <?php
 
-namespace Es\NetsEasy\Application\Helper;
+namespace NexiCheckout\Application\Helper;
 
+use NexiCheckout\Core\Module;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\ShopVersion;
+use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Facade\ModuleSettingServiceInterface;
 
 class Api
 {
@@ -21,19 +24,22 @@ class Api
     /**
      * @var Api
      */
-    protected static $oInstance = null;
+    protected static ?Api $instance = null;
 
-    /**
-     * Create singleton instance of current helper class
-     *
-     * @return Api
-     */
-    public static function getInstance()
+    private ModuleSettingServiceInterface $setting;
+
+    public function __construct()
     {
-        if (self::$oInstance === null) {
-            self::$oInstance = oxNew(self::class);
+        $this->setting = ContainerFactory::getInstance()->getContainer()->get(ModuleSettingServiceInterface::class);
+    }
+
+    public static function getInstance(): self
+    {
+        if (self::$instance === null) {
+            self::$instance = oxNew(self::class);
         }
-        return self::$oInstance;
+
+        return self::$instance;
     }
 
     /**
@@ -43,10 +49,11 @@ class Api
      */
     public function getSecretKey()
     {
-        if (Registry::getConfig()->getConfigParam('nets_blMode') == 1) {
-            return Registry::getConfig()->getConfigParam('nets_secret_key_live');
+        if ($this->setting->getString('nexi_checkout_blMode', Module::ID)->toString() !== "0") {
+            return $this->setting->getString("nexi_checkout_secret_key_live", Module::ID);
         }
-        return Registry::getConfig()->getConfigParam('nets_secret_key_test');
+
+        return $this->setting->getString("nexi_checkout_secret_key_test", Module::ID);
     }
 
     /**
@@ -56,10 +63,11 @@ class Api
      */
     public function getCheckoutKey()
     {
-        if (Registry::getConfig()->getConfigParam('nets_blMode') == 1) {
-            return Registry::getConfig()->getConfigParam('nets_checkout_key_live');
+        if ($this->setting->getString('nexi_checkout_blMode', Module::ID)->toString() !== "0") {
+            return $this->setting->getString('nexi_checkout_checkout_key_live', Module::ID);
         }
-        return Registry::getConfig()->getConfigParam('nets_checkout_key_test');
+
+        return $this->setting->getString('nexi_checkout_checkout_key_test', Module::ID);
     }
 
     /**
@@ -69,9 +77,10 @@ class Api
      */
     public function getApiUrl()
     {
-        if (Registry::getConfig()->getConfigParam('nets_blMode') == 1) {
+        if ($this->setting->getString('nexi_checkout_blMode', Module::ID)->toString() !== "0") {
             return self::API_LIVE;
         }
+
         return self::API_TEST;
     }
 
@@ -82,9 +91,10 @@ class Api
      */
     public function getCheckoutJs()
     {
-        if (Registry::getConfig()->getConfigParam('nets_blMode') == 1) {
+        if ($this->setting->getString('nexi_checkout_blMode', Module::ID)->toString() !== "0") {
             return self::JS_ENDPOINT_LIVE;
         }
+
         return self::JS_ENDPOINT_TEST;
     }
 
@@ -95,9 +105,10 @@ class Api
      */
     public function getIntegrationType()
     {
-        if (Registry::getConfig()->getConfigParam('nets_checkout_mode') == 'embedded') {
+        if ($this->setting->getString('nexi_checkout_checkout_mode', Module::ID)->toString() !== 'hosted') {
             return self::EMBEDDED;
         }
+
         return self::HOSTED;
     }
 
@@ -149,7 +160,7 @@ class Api
      */
     public function getLayout()
     {
-        return Registry::getConfig()->getActiveView()->getViewConfig()->getModuleUrl("esnetseasy", "out/src/js/").'layout.js';
+        return Registry::getConfig()->getActiveView()->getViewConfig()->getModuleUrl(Module::ID, "src/js/").'layout.js';
     }
 
     /**

@@ -1,4 +1,4 @@
-name: Nets module migration
-migrations_namespace: Es\NetsEasy\Migrations
-table_name: oxmigrations_esnetseasy
-migrations_directory: data
+table_storage:
+    table_name: oxmigrations_nexi_checkout_transactions
+migrations_paths:
+      'NexiCheckout\Migrations': data

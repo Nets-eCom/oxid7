@@ -1,0 +1,11 @@
+{% extends 'page/checkout/thankyou.html.twig' %}
+
+{% block checkout_thankyou_info %}
+    {{ parent() }}
+    {% if order.isNexiCheckout() %}
+    <div>
+        <b>Nexi Checkout {{ translate({ ident: "NEXI_CHECKOUT_PAY_METHOD_nexi_checkout_payment_id" }) }}:</b>  {{ oView.getTransactionId() }}
+    </div>
+    <br>
+    {% endif %}
+{% endblock %}

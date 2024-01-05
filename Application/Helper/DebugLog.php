@@ -1,6 +1,6 @@
 <?php
 
-namespace Es\NetsEasy\Application\Helper;
+namespace NexiCheckout\Application\Helper;
 
 class DebugLog
 {
@@ -27,7 +27,7 @@ class DebugLog
      *
      * @var string
      */
-    protected $sLogFilename = "Nets.log";
+    protected $sLogFilename = "nexi_checkout.log";
 
     /**
      * Logs to a log file in the oxid log folder

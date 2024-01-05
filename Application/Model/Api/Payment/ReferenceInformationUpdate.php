@@ -1,15 +1,8 @@
 <?php
 
-namespace Es\NetsEasy\Application\Model\Api\Payment;
+namespace NexiCheckout\Application\Model\Api\Payment;
 
-/**
- * Class ReferenceInformationUpdate
- *
- * Documentation for the API call: https://developers.nets.eu/nets-easy/en-EU/api/payment-v1/#v1-payments-paymentid-referenceinformation-put
- *
- * @package Es\NetsEasy\Application\Model\Api
- */
-class ReferenceInformationUpdate extends \Es\NetsEasy\Application\Model\Api\BaseRequest
+class ReferenceInformationUpdate extends \NexiCheckout\Application\Model\Api\BaseRequest
 {
     /**
      * @var string|null

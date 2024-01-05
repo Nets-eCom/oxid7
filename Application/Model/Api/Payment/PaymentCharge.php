@@ -1,17 +1,11 @@
 <?php
 
-namespace Es\NetsEasy\Application\Model\Api\Payment;
+namespace NexiCheckout\Application\Model\Api\Payment;
 
+use NexiCheckout\Application\Model\Api\OrderItemRequest;
 use OxidEsales\Eshop\Application\Model\Order;
 
-/**
- * Class PaymentCharge
- *
- * Documentation for the API call: https://developers.nets.eu/nets-easy/en-EU/api/payment-v1/#v1-payments-paymentid-charges-post
- *
- * @package Es\NetsEasy\Application\Model\Api
- */
-class PaymentCharge extends \Es\NetsEasy\Application\Model\Api\OrderItemRequest
+class PaymentCharge extends OrderItemRequest
 {
     /**
      * @var string|null

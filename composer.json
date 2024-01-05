@@ -1,24 +1,35 @@
 {
-  "name": "nexi-ecom/oxid6_easy",
-  "description": "Nexi Payment Module for Oxid 6",
+  "name": "nexi-checkout/oxid7",
+  "description": "Nexi Checkout payment module for Oxid 7",
+  "version": "1.0.0",
   "type": "oxideshop-module",
-  "keywords": ["oxid", "modules", "eShop"],
-  "homepage": "https://ecom.nets.eu/",
-  "version":"2.0.1",
+  "keywords": [
+    "oxid",
+    "modules",
+    "eShop"
+  ],
   "license": [
     "AGPL-3.0-or-later"
   ],
-  "extra": {
-    "oxideshop": {
-      "target-directory": "es/esnetseasy"
-    }
-  },
+  "prefer-stable": true,
+  "prefer-dist": true,
   "require": {
-    "php": ">=7.0"
+    "php": "^8.0 | ^8.1"
+  },
+  "minimum-stability": "dev",
+  "conflict": {
+    "oxid-esales/oxideshop-ce": "<7.0"
   },
   "autoload": {
     "psr-4": {
-      "Es\\NetsEasy\\": "../../../source/modules/es/esnetseasy"
+      "NexiCheckout\\": "./"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "oxid-esales/oxideshop-composer-plugin": true,
+      "oxid-esales/oxideshop-unified-namespace-generator": true
     }
   }
 }
+

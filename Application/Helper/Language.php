@@ -1,6 +1,6 @@
 <?php
 
-namespace Es\NetsEasy\Application\Helper;
+namespace NexiCheckout\Application\Helper;
 
 use OxidEsales\Eshop\Core\Registry;
 
@@ -9,7 +9,7 @@ class Language
     /**
      * @var string[]
      */
-    protected $netsLocaleMap = [
+    protected $localeMap = [
         "en" => "en-GB",
         "de" => "de-DE",
         "dk" => "da-DK",
@@ -45,11 +45,11 @@ class Language
      *
      * @return string
      */
-    public function netsGetLocaleCode()
+    public function getLocaleCode()
     {
         $sAbbreviation = Registry::getLang()->getLanguageAbbr();
-        if (isset($this->netsLocaleMap[$sAbbreviation])) {
-            return $this->netsLocaleMap[$sAbbreviation];
+        if (isset($this->localeMap[$sAbbreviation])) {
+            return $this->localeMap[$sAbbreviation];
         }
         return "en-GB"; // fallback value
     }

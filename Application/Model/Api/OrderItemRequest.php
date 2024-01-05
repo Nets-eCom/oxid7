@@ -1,11 +1,11 @@
 <?php
 
-namespace Es\NetsEasy\Application\Model\Api;
+namespace NexiCheckout\Application\Model\Api;
 
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\OrderArticle;
 use OxidEsales\Eshop\Core\Price;
-use Es\NetsEasy\Application\Helper\Api;
+use NexiCheckout\Application\Helper\Api;
 
 abstract class OrderItemRequest extends BaseRequest
 {

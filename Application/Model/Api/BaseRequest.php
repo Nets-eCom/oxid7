@@ -1,10 +1,10 @@
 <?php
 
-namespace Es\NetsEasy\Application\Model\Api;
+namespace NexiCheckout\Application\Model\Api;
 
-use Es\NetsEasy\Application\Helper\Api;
-use Es\NetsEasy\Application\Helper\Curl;
-use Es\NetsEasy\Application\Helper\DebugLog;
+use NexiCheckout\Application\Helper\Api;
+use NexiCheckout\Application\Helper\Curl;
+use NexiCheckout\Application\Helper\DebugLog;
 
 abstract class BaseRequest
 {
@@ -137,16 +137,16 @@ abstract class BaseRequest
     protected function sendCurlRequest($aParams = false)
     {
         if ($this->sEndpoint === null) {
-            throw new \Exception("NetsRequest: Entpoint is not set!");
+            throw new \Exception("NexiCheckoutRequest: Entpoint is not set!");
         }
 
         if ($this->sRequestMethod === null) {
-            throw new \Exception("NetsRequest: Request method is not set!");
+            throw new \Exception("NexiCheckoutRequest: Request method is not set!");
         }
 
         $sRequestUrl = $this->getRequestUrl();
 
-        DebugLog::getInstance()->log("NetsApi ".(new \ReflectionClass($this))->getShortName().": Send request to url ".$sRequestUrl." - params: ".json_encode($aParams, true));
+        DebugLog::getInstance()->log("NexiCheckoutApi ".(new \ReflectionClass($this))->getShortName().": Send request to url ".$sRequestUrl." - params: ".json_encode($aParams, true));
 
         // add params to object to make them accessible later on for logging and similar things
         $this->setRequestParameters($aParams);
@@ -156,20 +156,20 @@ abstract class BaseRequest
 
         switch ($oCurl->getLastHttpCode()) {
             case 401:
-                $error_message = 'NETS Easy authorization filed. Check your secret/checkout keys';
+                $error_message = 'Nexi Checkout authorization filed. Check your secret/checkout keys';
                 break;
             case 400:
-                $error_message = 'NETS Easy Bad request: Please check request params/headers ';
+                $error_message = 'Nexi Checkout Bad request: Please check request params/headers ';
                 break;
             case 500:
                 $error_message = 'Unexpected error';
                 break;
         }
         if (!empty($error_message)) {
-            DebugLog::getInstance()->log("netsOrder Curl request error, ".$error_message);
+            DebugLog::getInstance()->log("NexiCheckoutOrder Curl request error, ".$error_message);
         }
 
-        DebugLog::getInstance()->log("NetsApi ".(new \ReflectionClass($this))->getShortName().": Response: ".$sResponse);
+        DebugLog::getInstance()->log("NexiCheckoutApi ".(new \ReflectionClass($this))->getShortName().": Response: ".$sResponse);
 
         $aResponse = json_decode($sResponse, true);
         return $aResponse;
