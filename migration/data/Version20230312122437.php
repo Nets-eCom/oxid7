@@ -2,28 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Es\NetsEasy\Migrations;
+namespace NexiCheckout\Migrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
-use Es\NetsEasy\Application\Helper\Payment;
-use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
-use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
 final class Version20230312122437 extends AbstractMigration
 {
     public function getDescription() : string
     {
-        return '';
+        return 'Creates transaction table if doesn\'t exist yet';
     }
 
     public function up(Schema $schema) : void
     {
         $this->addSql("
-                CREATE TABLE IF NOT EXISTS `nets_transactions` (
+                CREATE TABLE IF NOT EXISTS `nexi_checkout_transactions` (
                     `oxid` int(10) unsigned NOT NULL auto_increment,
                     `req_data` text collate latin1_general_ci,
                     `ret_data` text collate latin1_general_ci,
@@ -45,80 +39,9 @@ final class Version20230312122437 extends AbstractMigration
                     PRIMARY KEY  (`oxid`)
                 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
             ");
-
-        //extend the oxuser table
-        $this->executeModifications();
-
     }
 
     public function down(Schema $schema) : void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-
-    }
-
-      /**
-     * Function to check and execute db modifications.
-     * @return void
-     */
-    public function executeModifications()
-    {
-        foreach (Payment::getInstance()->getNetsPaymentTypes() as $sPaymentId => $aPaymentType) {
-            //check if nets payment is completed
-            $queryBuilder = ContainerFactory::getInstance()->getContainer()->get(QueryBuilderFactoryInterface::class)->create();
-            $queryBuilder
-                ->select('oxid')
-                ->from('oxpayments')
-                ->where('oxid = :paymentId')
-                ->setParameter('paymentId', $sPaymentId);
-            $sPaymentOxid = $queryBuilder->execute()->fetchOne();
-            if (empty($sPaymentOxid)) {
-                //create payment
-                $sDesc = $aPaymentType['desc'];
-                if (!empty($sDesc)) {
-                    $queryBuilder = ContainerFactory::getInstance()->getContainer()->get(QueryBuilderFactoryInterface::class)->create();
-                    $queryBuilder->insert('oxpayments')
-                        ->values([
-                            'OXID' => '?',
-                            'OXACTIVE' => '?',
-                            'OXDESC' => '?',
-                            'OXADDSUM' => '?',
-                            'OXADDSUMTYPE' => '?',
-                            'OXFROMBONI' => '?',
-                            'OXFROMAMOUNT' => '?',
-                            'OXTOAMOUNT' => '?',
-                            'OXVALDESC' => '?',
-                            'OXCHECKED' => '?',
-                            'OXDESC_1' => '?',
-                            'OXVALDESC_1' => '?',
-                            'OXDESC_2' => '?',
-                            'OXVALDESC_2' => '?',
-                            'OXDESC_3' => '?',
-                            'OXVALDESC_3' => '?',
-                            'OXLONGDESC' => '?',
-                            'OXLONGDESC_1' => '?',
-                            'OXLONGDESC_2' => '?',
-                            'OXLONGDESC_3' => '?',
-                            'OXSORT' => '?',
-                        ])
-                        ->setParameter(0, $sPaymentId)->setParameter(1, 1)->setParameter(2, $sDesc)->setParameter(3, 0)
-                        ->setParameter(4, 'abs')->setParameter(5, 0)->setParameter(6, 0)->setParameter(7, 1000000)->setParameter(8, '')->setParameter(9, 0)
-                        ->setParameter(10, $sDesc)->setParameter(11, '')->setParameter(12, '')->setParameter(13, '')->setParameter(14, '')->setParameter(15, '')
-                        ->setParameter(16, '')->setParameter(17, '')->setParameter(18, '')->setParameter(19, '')->setParameter(20, 0)
-                        ->execute();
-                }
-            }
-
-            $queryBuilder = ContainerFactory::getInstance()->getContainer()->get(QueryBuilderFactoryInterface::class)->create();
-            $queryBuilder
-                ->update('oxpayments', 'o')
-                ->set('o.oxactive', ':active')
-                ->where('o.oxid = :paymentId')
-                ->setParameters([
-                    'active' => 0,
-                    'paymentId' => $sPaymentId,
-                ])
-                ->execute();
-        }
     }
 }

@@ -1,114 +1,112 @@
 <?php
 
-/**
- * This file is part of OXID NETS module.
- * 
- */
+namespace NexiCheckout\Core;
 
-namespace Es\NetsEasy\Core;
-
+use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\DoctrineMigrationWrapper\MigrationsBuilder;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Es\NetsEasy\Application\Helper\Payment;
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
-use Es\NetsEasy\Application\Helper\DebugLog;
 
-/**
- * Class defines what module does on Shop events.
- */
 class Events
 {
-    /**
-     * Function to execute action on activate event
-     * @return void
-     */
-    public static function onActivate()
+    public static function onActivate(): void
     {
         self::executeModuleMigrations();
-        self::addPaymentMethods();
+        self::addPayment();
     }
 
-    /**
-     * Function to execute action on deactivate event
-     * @return void
-     */
-    public static function onDeactivate()
+    public static function onDeactivate(): void
     {
-        self::executeModuleMigrations();
+        self::getQueryBuilder()
+            ->update('oxpayments')
+            ->set("oxactive", 0)
+            ->where('oxid = :moduleId')
+            ->setParameter('moduleId', Module::ID)
+            ->execute();
     }
 
-    /**
-     * Execute necessary module migrations on activate event
-     * @return void
-     */
-    protected static function executeModuleMigrations()
+    private static function executeModuleMigrations(): void
     {
         $migrations = (new MigrationsBuilder())->build();
         $output = new BufferedOutput();
         $migrations->setOutput($output);
-        $needsUpdate = $migrations->execute('migrations:up-to-date', 'esnetseasy');
+        $needsUpdate = $migrations->execute('migrations:up-to-date', Module::ID);
         if ($needsUpdate) {
-            $migrations->execute('migrations:migrate', 'esnetseasy');
+            $migrations->execute('migrations:migrate', Module::ID);
         }
     }
 
-     /**
-     * Add necessary payment method on activate event
-     * @return void
-     */
-    protected static function addPaymentMethods()
+    private static function addPayment(): void
     {
-        DebugLog::getInstance()->log("addPaymentMethods called");
-        
-        foreach (Payment::getInstance()->getNetsPaymentTypes() as $sPaymentId => $aPaymentType) {
-            //check if nets payment is completed
-            $queryBuilder = ContainerFactory::getInstance()->getContainer()->get(QueryBuilderFactoryInterface::class)->create();
-            $queryBuilder
-                ->select('oxid')
-                ->from('oxpayments')
-                ->where('oxid = :paymentId')
-                ->setParameter('paymentId', $sPaymentId);
-            $sPaymentOxid = $queryBuilder->execute()->fetchOne();
+        $queryBuilder = self::getQueryBuilder();
+        $paymentExists = $queryBuilder
+            ->select('oxid')
+            ->from('oxpayments')
+            ->where('oxid = :paymentId')
+            ->setParameter('paymentId', Module::ID)
+            ->execute()
+            ->fetchOne();
 
-            if (empty($sPaymentOxid)) {
-                DebugLog::getInstance()->log("payment method added for : ".json_encode($aPaymentType));
-                //create payment
-                $sDesc = $aPaymentType['descEN'];
-                $sDescDE = $aPaymentType['descDE'];
-                if (!empty($sDesc)) {
-                    $queryBuilder = ContainerFactory::getInstance()->getContainer()->get(QueryBuilderFactoryInterface::class)->create();
-                    $queryBuilder->insert('oxpayments')
-                        ->values([
-                            'OXID' => '?',
-                            'OXACTIVE' => '?',
-                            'OXDESC' => '?',
-                            'OXADDSUM' => '?',
-                            'OXADDSUMTYPE' => '?',
-                            'OXFROMBONI' => '?',
-                            'OXFROMAMOUNT' => '?',
-                            'OXTOAMOUNT' => '?',
-                            'OXVALDESC' => '?',
-                            'OXCHECKED' => '?',
-                            'OXDESC_1' => '?',
-                            'OXVALDESC_1' => '?',
-                            'OXDESC_2' => '?',
-                            'OXVALDESC_2' => '?',
-                            'OXDESC_3' => '?',
-                            'OXVALDESC_3' => '?',
-                            'OXLONGDESC' => '?',
-                            'OXLONGDESC_1' => '?',
-                            'OXLONGDESC_2' => '?',
-                            'OXLONGDESC_3' => '?',
-                            'OXSORT' => '?',
-                        ])
-                        ->setParameter(0, $sPaymentId)->setParameter(1, 0)->setParameter(2, $sDescDE)->setParameter(3, 0)
-                        ->setParameter(4, 'abs')->setParameter(5, 0)->setParameter(6, 0)->setParameter(7, 1000000)->setParameter(8, '')->setParameter(9, 0)
-                        ->setParameter(10, $sDesc)->setParameter(11, '')->setParameter(12, '')->setParameter(13, '')->setParameter(14, '')->setParameter(15, '')
-                        ->setParameter(16, '')->setParameter(17, '')->setParameter(18, '')->setParameter(19, '')->setParameter(20, 0)
-                        ->execute();
-                }
-            }
+        if ($paymentExists) {
+            return;
         }
+
+        $queryBuilder->insert('oxpayments')
+            ->values([
+                'OXID' => ':oxid',
+                'OXACTIVE' => ':oxactive',
+                'OXDESC' => ':oxdesc',
+                'OXADDSUM' => ':oxaddsum',
+                'OXADDSUMTYPE' => ':oxaddsumtype',
+                'OXFROMBONI' => ':oxfromboni',
+                'OXFROMAMOUNT' => ':oxfromamount',
+                'OXTOAMOUNT' => ':oxtoamount',
+                'OXVALDESC' => ':oxvaldesc',
+                'OXCHECKED' => ':oxchecked',
+                'OXDESC_1' => ':oxdesc1',
+                'OXVALDESC_1' => ':oxvaldesc1',
+                'OXDESC_2' => ':oxdesc2',
+                'OXVALDESC_2' => ':oxvaldesc2',
+                'OXDESC_3' => ':oxdesc3',
+                'OXVALDESC_3' => ':oxvaldesc3',
+                'OXLONGDESC' => ':oxlongdesc',
+                'OXLONGDESC_1' => ':oxlongdesc1',
+                'OXLONGDESC_2' => ':oxlongdesc2',
+                'OXLONGDESC_3' => ':oxlongdesc3',
+                'OXSORT' => ':oxsort',
+            ])
+            ->setParameters([
+                'oxid' => Module::ID,
+                'oxactive' => 0,
+                'oxdesc' => 'Nexi Checkout',
+                'oxaddsum' => 0,
+                'oxaddsumtype' => 'abs',
+                'oxfromboni' => 0,
+                'oxfromamount' => 0,
+                'oxtoamount' => 1000000,
+                'oxvaldesc' => '',
+                'oxchecked' => 0,
+                'oxdesc1' => 'Nexi Checkout',
+                'oxvaldesc1' => '',
+                'oxdesc2' => '',
+                'oxvaldesc2' => '',
+                'oxdesc3' => '',
+                'oxvaldesc3' => '',
+                'oxlongdesc' => '',
+                'oxlongdesc1' => '',
+                'oxlongdesc2' => '',
+                'oxlongdesc3' => '',
+                'oxsort' => 0,
+            ])
+            ->execute();
+    }
+
+    private static function getQueryBuilder(): QueryBuilder
+    {
+        return ContainerFactory::getInstance()
+            ->getContainer()
+            ->get(QueryBuilderFactoryInterface::class)
+            ->create();
     }
 }

@@ -1,71 +1,43 @@
 <?php
 
-/**
- * Nets Oxid Payment module metadata
- *
- * @version 2.0.1
- * @package Nets
- * @copyright nets
- */
-/**
- * Metadata version
- */
 $sMetadataVersion = '2.1';
 
-/**
- * Module information
- */
 $aModule = [
-    'id' => 'esnetseasy',
-    'title' => 'Nets Easy',
-    'version' => '2.0.1',
-    'author' => 'Nets eCom',
-    'url' => 'https://ecom.nets.eu/',
-    'email' => 'hello-ecomconnect@nexigroup.com',
-    'thumbnail' => 'out/src/img/nets_logo.png',
+    'id' => 'nexi-checkout',
+    'title' => 'Nexi Checkout',
+    'version' => '1.0.0',
+    'author' => 'Nexi Checkout',
+    'url' => '', // @todo
+    'email' => '', // @todo
+    'thumbnail' => 'nexi-checkout_logo_medium.png',
     'description' => [
-        'de' => 'Nets einfach sicher zahlen',
-        'en' => 'Nets safe online payments'
+        'de' => 'Nexi Checkout einfach sicher zahlen',
+        'en' => 'Nexi Checkout safe online payments'
     ],
     'extend' => [
-        \OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration::class => Es\NetsEasy\extend\Application\Controller\Admin\ModuleConfiguration::class,
-        \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview::class => Es\NetsEasy\extend\Application\Controller\Admin\OrderOverview::class,
-        \OxidEsales\Eshop\Application\Controller\PaymentController::class => Es\NetsEasy\extend\Application\Controller\PaymentController::class,
-        \OxidEsales\Eshop\Application\Controller\OrderController::class => Es\NetsEasy\extend\Application\Controller\OrderController::class,
-        \OxidEsales\Eshop\Application\Controller\ThankYouController::class => Es\NetsEasy\extend\Application\Controller\ThankyouController::class,
-        \OxidEsales\Eshop\Application\Model\Order::class => Es\NetsEasy\extend\Application\Model\Order::class,
-        \OxidEsales\Eshop\Application\Model\Payment::class => Es\NetsEasy\extend\Application\Model\Payment::class,
-        \OxidEsales\Eshop\Application\Model\PaymentGateway::class => Es\NetsEasy\extend\Application\Model\PaymentGateway::class,
-    ],
-    'blocks' => [
-        ['template' => 'order_overview.tpl',            'block' => 'admin_order_overview_export',   'file' => 'nets_order_overview_export.tpl'],
-        ['template' => 'page/checkout/order.tpl',       'block' => 'shippingAndPayment',            'file' => 'nets_shippingAndPayment.tpl'],
-        ['template' => 'page/checkout/order.tpl',       'block' => 'checkout_order_errors',         'file' => 'nets_checkout_order_errors.tpl'],
-        ['template' => 'page/checkout/thankyou.tpl',    'block' => 'checkout_thankyou_info',        'file' => 'nets_checkout_thankyou_info.tpl'],
-        ['template' => 'module_config.tpl',             'block' => 'admin_module_config_form',      'file' => 'nets_module_config_form.tpl'],
-        ['template' => 'page/checkout/payment.tpl',     'block' => 'select_payment',                'file' => 'nets_select_payment.tpl']
+        \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview::class => NexiCheckout\Extend\Application\Controller\Admin\OrderOverview::class,
+        \OxidEsales\Eshop\Application\Controller\PaymentController::class => NexiCheckout\Extend\Application\Controller\PaymentController::class,
+        \OxidEsales\Eshop\Application\Controller\OrderController::class => NexiCheckout\Extend\Application\Controller\OrderController::class,
+        \OxidEsales\Eshop\Application\Controller\ThankYouController::class => NexiCheckout\Extend\Application\Controller\ThankyouController::class,
+        \OxidEsales\Eshop\Application\Model\Order::class => NexiCheckout\Extend\Application\Model\Order::class,
+        \OxidEsales\Eshop\Application\Model\Payment::class => NexiCheckout\Extend\Application\Model\Payment::class,
+        \OxidEsales\Eshop\Application\Model\PaymentGateway::class => NexiCheckout\Extend\Application\Model\PaymentGateway::class,
     ],
     'settings' => [
-        ['group' => 'nets_main', 'name' => 'nets_merchant_id',          'type' => 'str',    'value' => '',],
-        ['group' => 'nets_main', 'name' => 'nets_blMode',               'type' => 'select', 'value' => '0', 'constraints' => '0|1'],
-        ['group' => 'nets_main', 'name' => 'nets_secret_key_live',      'type' => 'str',    'value' => ''],
-        ['group' => 'nets_main', 'name' => 'nets_checkout_key_live',    'type' => 'str',    'value' => ''],
-        ['group' => 'nets_main', 'name' => 'nets_secret_key_test',      'type' => 'str',    'value' => ''],
-        ['group' => 'nets_main', 'name' => 'nets_checkout_key_test',    'type' => 'str',    'value' => ''],
-        ['group' => 'nets_main', 'name' => 'nets_terms_url',            'type' => 'str',    'value' => 'https://mysite.com/index.php?cl=content&oxloadid=oxagb'],
-        ['group' => 'nets_main', 'name' => 'nets_merchant_terms_url',   'type' => 'str',    'value' => 'https://cdn.dibspayment.com/terms/easy/terms_of_use.pdf'],
-        ['group' => 'nets_main', 'name' => 'nets_checkout_mode',        'type' => 'select', 'value' => 'hosted', 'constraints' => 'embedded|hosted'],
-        ['group' => 'nets_main', 'name' => 'nets_autocapture',          'type' => 'bool',   'value' => 'false'],
-        ['group' => 'nets_main', 'name' => 'nets_blDebug_log',          'type' => 'bool',   'value' => 'false'],
+        ['group' => 'nexi_checkout_main', 'name' => 'nexi_checkout_merchant_id',          'type' => 'str',    'value' => '',],
+        ['group' => 'nexi_checkout_main', 'name' => 'nexi_checkout_blMode',               'type' => 'select', 'value' => '0', 'constraints' => '0|1'],
+        ['group' => 'nexi_checkout_main', 'name' => 'nexi_checkout_secret_key_live',      'type' => 'str',    'value' => ''],
+        ['group' => 'nexi_checkout_main', 'name' => 'nexi_checkout_checkout_key_live',    'type' => 'str',    'value' => ''],
+        ['group' => 'nexi_checkout_main', 'name' => 'nexi_checkout_secret_key_test',      'type' => 'str',    'value' => ''],
+        ['group' => 'nexi_checkout_main', 'name' => 'nexi_checkout_checkout_key_test',    'type' => 'str',    'value' => ''],
+        ['group' => 'nexi_checkout_main', 'name' => 'nexi_checkout_terms_url',            'type' => 'str',    'value' => 'https://mysite.com/index.php?cl=content&oxloadid=oxagb'],
+        ['group' => 'nexi_checkout_main', 'name' => 'nexi_checkout_merchant_terms_url',   'type' => 'str',    'value' => 'https://cdn.dibspayment.com/terms/easy/terms_of_use.pdf'],
+        ['group' => 'nexi_checkout_main', 'name' => 'nexi_checkout_checkout_mode',        'type' => 'select', 'value' => 'hosted', 'constraints' => 'embedded|hosted'],
+        ['group' => 'nexi_checkout_main', 'name' => 'nexi_checkout_autocapture',          'type' => 'bool',   'value' => 'false'],
+        ['group' => 'nexi_checkout_main', 'name' => 'nexi_checkout_blDebug_log',          'type' => 'bool',   'value' => 'false'],
     ],
-    'templates' => [],
     'events' => [
-        'onActivate' => '\Es\NetsEasy\Core\Events::onActivate',
-        'onDeactivate' => '\Es\NetsEasy\Core\Events::onDeactivate'
+        'onActivate' => '\NexiCheckout\Core\Events::onActivate',
+        'onDeactivate' => '\NexiCheckout\Core\Events::onDeactivate'
     ]
 ];
-
-if (version_compare(\OxidEsales\Eshop\Core\ShopVersion::getVersion(), '6.5', '<')) {
-    $aModule['events']['onActivate'] = '\Es\NetsEasy\Compatibility\Core\Events::onActivate';
-    $aModule['events']['onDeactivate'] = '\Es\NetsEasy\Compatibility\Core\Events::onDeactivate';
-}

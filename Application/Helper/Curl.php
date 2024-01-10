@@ -1,6 +1,6 @@
 <?php
 
-namespace Es\NetsEasy\Application\Helper;
+namespace NexiCheckout\Application\Helper;
 
 class Curl
 {

@@ -1,24 +1,28 @@
 <?php
 
-namespace Es\NetsEasy\Application\Model\Api\Payment;
+namespace NexiCheckout\Application\Model\Api\Payment;
 
+use NexiCheckout\Application\Model\Api\OrderItemRequest;
+use NexiCheckout\Core\Module;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\OrderArticle;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Price;
-use Es\NetsEasy\Application\Helper\Api;
-use Es\NetsEasy\Application\Helper\Countrylist;
+use NexiCheckout\Application\Helper\Api;
+use NexiCheckout\Application\Helper\Countrylist;
+use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Facade\ModuleSettingServiceInterface;
 
-/**
- * Class PaymentCreate
- *
- * Documentation for the API call: https://developers.nets.eu/nets-easy/en-EU/api/payment-v1/#v1-payments-post
- *
- * @package Es\NetsEasy\Application\Model\Api
- */
-class PaymentCreate extends \Es\NetsEasy\Application\Model\Api\OrderItemRequest
+class PaymentCreate extends OrderItemRequest
 {
+    private ModuleSettingServiceInterface $setting;
+
+    public function __construct()
+    {
+        $this->setting = ContainerFactory::getInstance()->getContainer()->get(ModuleSettingServiceInterface::class);
+    }
+
     /**
      * @var string|null
      */
@@ -151,8 +155,8 @@ class PaymentCreate extends \Es\NetsEasy\Application\Model\Api\OrderItemRequest
     {
         $aCheckout = [
             'integrationType' => Api::getInstance()->getIntegrationType(),
-            'termsUrl' => Registry::getConfig()->getConfigParam('nets_terms_url'),
-            'merchantTermsUrl' => Registry::getConfig()->getConfigParam('nets_merchant_terms_url'),
+            'termsUrl' => $this->setting->getString('nexi_checkout_terms_url', Module::ID),
+            'merchantTermsUrl' => $this->setting->getString('nexi_checkout_merchant_terms_url', Module::ID),
             'merchantHandlesConsumerData' => true,
             'consumer' => $this->getConsumerData($oOrder),
         ];
@@ -161,11 +165,11 @@ class PaymentCreate extends \Es\NetsEasy\Application\Model\Api\OrderItemRequest
             $stoken = '&stoken='.Registry::getSession()->getSessionChallengeToken();
             $aCheckout['url'] = urldecode(Registry::getConfig()->getCurrentShopUrl().'index.php?cl=order&fnc=execute'.$stoken);
         } else {
-            $aCheckout['returnUrl'] = urldecode(Registry::getConfig()->getCurrentShopUrl().'index.php?cl=order&fnc=netsReturnHosted'.$this->getReturnParameters());
+            $aCheckout['returnUrl'] = urldecode(Registry::getConfig()->getCurrentShopUrl().'index.php?cl=order&fnc=returnHosted'.$this->getReturnParameters());
             $aCheckout['cancelUrl'] = urldecode(Registry::getConfig()->getCurrentShopUrl().'index.php?cl=payment');
         }
 
-        if (Registry::getConfig()->getConfigParam('nets_autocapture')) {
+        if ($this->setting->getBoolean('nexi_checkout_autocapture', Module::ID)) {
             $aCheckout['charge'] = true;
         }
         return $aCheckout;
@@ -177,7 +181,7 @@ class PaymentCreate extends \Es\NetsEasy\Application\Model\Api\OrderItemRequest
      */
     protected function getParamsFromOrder($oOrder, $pay_method)
     {
-        $aParams = [
+        return [
             'order' => [
                 'items' => $this->getOrderItems($oOrder),
                 'amount' => Api::getInstance()->formatPrice($oOrder->oxorder__oxtotalordersum->value),
@@ -186,35 +190,6 @@ class PaymentCreate extends \Es\NetsEasy\Application\Model\Api\OrderItemRequest
             ],
             'checkout' => $this->getCheckoutData($oOrder),
         ];
-        if (!is_null($pay_method) && $pay_method !='nets_easy') {
-            $pay_name = '';
-
-            if ($pay_method == 'nets_easy_card') {
-                $pay_name = 'Card';
-            } elseif ($pay_method =='nets_easy_sofort') {
-                $pay_name = 'Sofort';
-            } elseif ($pay_method == 'nets_easy_ratepay_invoice') {
-                $pay_name = 'RatePayInvoice';
-            } elseif ($pay_method == 'nets_easy_afterpay_invoice') {
-                $pay_name = 'EasyInvoice';
-            } elseif ($pay_method == 'nets_easy_afterpay_instalment') {
-                $pay_name = 'EasyInstallment';
-            } elseif ($pay_method == 'nets_easy_paypal') {
-                $pay_name = 'Paypal';
-            }
-
-
-            if ($pay_name !== '') {
-                $aParams['paymentMethodsConfiguration'] = [
-                array(
-                    'name' => $pay_name,
-                    'enabled' => true
-                )
-                ];
-            }
-        }
-
-        return $aParams;
     }
 
     /**

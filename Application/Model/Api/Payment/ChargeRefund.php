@@ -1,17 +1,11 @@
 <?php
 
-namespace Es\NetsEasy\Application\Model\Api\Payment;
+namespace NexiCheckout\Application\Model\Api\Payment;
 
+use NexiCheckout\Application\Model\Api\OrderItemRequest;
 use OxidEsales\Eshop\Application\Model\Order;
 
-/**
- * Class ChargeRefund
- *
- * Documentation for the API call: https://developers.nets.eu/nets-easy/en-EU/api/payment-v1/#v1-charges-chargeid-refunds-post
- *
- * @package Es\NetsEasy\Application\Model\Api
- */
-class ChargeRefund extends \Es\NetsEasy\Application\Model\Api\OrderItemRequest
+class ChargeRefund extends OrderItemRequest
 {
     /**
      * @var string|null

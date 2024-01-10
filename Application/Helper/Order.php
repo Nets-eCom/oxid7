@@ -1,6 +1,6 @@
 <?php
 
-namespace Es\NetsEasy\Application\Helper;
+namespace NexiCheckout\Application\Helper;
 
 use OxidEsales\Eshop\Application\Model\Order as CoreOrder;
 use OxidEsales\Eshop\Core\Registry;
