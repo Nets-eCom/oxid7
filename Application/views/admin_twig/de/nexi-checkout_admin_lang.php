@@ -10,7 +10,7 @@ $aLang = [
     'SHOP_MODULE_nexi_checkout_blMode' => 'Modus',
     'SHOP_MODULE_nexi_checkout_blMode_0' => 'Test',
     'SHOP_MODULE_nexi_checkout_blMode_1' => 'Live',
-    'SHOP_MODULE_nexi_checkout_checkout_mode' => 'Checkout Typ',
+    'SHOP_MODULE_nexi_checkout_checkout_mode' => 'Anzeigestil',
     'SHOP_MODULE_nexi_checkout_checkout_mode_embedded' => 'Eingebettet',
     'SHOP_MODULE_nexi_checkout_checkout_mode_hosted' => 'Gehostet',
     'SHOP_MODULE_nexi_checkout_secret_key_test' => 'Test Geheim-Schlüssel',
@@ -21,7 +21,7 @@ $aLang = [
     'SHOP_MODULE_nexi_checkout_merchant_terms_url' => 'Nutzungsbedingungs-Url',
     'SHOP_MODULE_nexi_checkout_autocapture' => 'Automatische Abbuchung',
     'SHOP_MODULE_nexi_checkout_payment_text' => 'Zahlungsmethode Text',
-    'SHOP_MODULE_nexi_checkout_blDebug_log' => 'Debug Modus',
+    'SHOP_MODULE_nexi_checkout_blDebug_log' => 'Debugmodus',
     'HELP_SHOP_MODULE_nexi_checkout_blDebug_log' => 'Zeigt im Übersichts Tab einer Bestellung die Bestellinfos von der Nexi Checkout API an.',
 
     // Order Messages
