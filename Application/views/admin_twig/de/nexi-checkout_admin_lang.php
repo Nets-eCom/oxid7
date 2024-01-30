@@ -21,6 +21,8 @@ $aLang = [
     'SHOP_MODULE_nexi_checkout_merchant_terms_url' => 'Nutzungsbedingungs-Url',
     'SHOP_MODULE_nexi_checkout_autocapture' => 'Automatische Abbuchung',
     'SHOP_MODULE_nexi_checkout_payment_text' => 'Zahlungsmethode Text',
+    'SHOP_MODULE_nexi_checkout_blDebug_log' => 'Debug Modus',
+    'HELP_SHOP_MODULE_nexi_checkout_blDebug_log' => 'Zeigt im Übersichts Tab einer Bestellung die Bestellinfos von der Nexi Checkout API an.',
 
     // Order Messages
     'SHOP_MODULE_nexi_checkout_chargeall' => 'BELASTUNG ALLE',
@@ -48,10 +50,6 @@ $aLang = [
     'SHOP_MODULE_nexi_checkout_paystatus_partial_refund' => 'Teiweise rückerstattet',
     'SHOP_MODULE_nexi_checkout_paystatus_cancel' => 'Storniert',
     'SHOP_MODULE_nexi_checkout_paystatus_refunded' => 'Rückerstattet',
-    'SHOP_MODULE_nexi_checkout_status' => 'Status',
-
-    // Debug Mode
-    'SHOP_MODULE_nexi_checkout_blDebug_log' => 'Debug Modus',
-    'HELP_SHOP_MODULE_nexi_checkout_blDebug_log' => 'Zeigt im Übersichts Tab einer Bestellung die Bestellinfos von der Nexi Checkout API an.'
+    'SHOP_MODULE_nexi_checkout_status' => 'Status'
 ];
 
