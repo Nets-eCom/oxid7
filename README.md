@@ -1,7 +1,7 @@
 # OXID eShop 7.0 payment module
 Our Oxid plugin is the perfect extension that enables you to use the Nexi|Nets Checkout to its full potential for your Oxid store.
 
-- [Nexi|Nets plugin for Oxid 7](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-oxid/)
+- [Nexi|Nets plugin for Oxid 7](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-oxid-7/)
 
 ## Integration options
 - [Direct web integration](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/web-integration/)  
