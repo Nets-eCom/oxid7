@@ -417,15 +417,12 @@ class Order extends Order_parent
     }
 
     /**
-     * Checking if this order is already stored.
-     *
-     * @param string $sOxId order ID
-     * @return bool
+     * @inheritDoc
      */
-    protected function checkOrderExist($sOxId = null) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    protected function checkOrderExist($sOxId = null): bool
     {
         if ($this->blIsNetsHostedModeReturn === false) {
-            return parent::_checkOrderExist($sOxId);
+            return parent::checkOrderExist($sOxId);
         }
         return false; // In hosted mode the parent finalizeOrder method is run again so the order DOES exist, but thats ok
     }
