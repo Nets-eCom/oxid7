@@ -415,4 +415,18 @@ class Order extends Order_parent
     {
         return ContainerFactory::getInstance()->getContainer()->get(QueryBuilderFactoryInterface::class)->create();
     }
+
+    /**
+     * Checking if this order is already stored.
+     *
+     * @param string $sOxId order ID
+     * @return bool
+     */
+    protected function checkOrderExist($sOxId = null) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    {
+        if ($this->blIsNetsHostedModeReturn === false) {
+            return parent::_checkOrderExist($sOxId);
+        }
+        return false; // In hosted mode the parent finalizeOrder method is run again so the order DOES exist, but thats ok
+    }
 }
