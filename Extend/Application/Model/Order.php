@@ -66,6 +66,7 @@ class Order extends Order_parent
         if (Registry::getRequest()->getRequestEscapedParameter('fnc') == 'returnHosted') {
             return true;
         }
+
         return false;
     }
 
@@ -323,6 +324,7 @@ class Order extends Order_parent
             }
             $this->clearSessionFlags();
         }
+
         return $iReturn;
     }
 
@@ -377,6 +379,7 @@ class Order extends Order_parent
         }
         $oUserPayment = oxNew(\OxidEsales\Eshop\Application\Model\UserPayment::class);
         $oUserPayment->load($this->oxorder__oxpaymentid->value);
+
         return $oUserPayment;
     }
 
@@ -408,11 +411,24 @@ class Order extends Order_parent
         if ($this->isHostedModeReturn === false) {
             return parent::executePayment($oBasket, $oUserpayment);
         }
+
         return true;
     }
 
     protected function getQueryBuilder(): QueryBuilder
     {
         return ContainerFactory::getInstance()->getContainer()->get(QueryBuilderFactoryInterface::class)->create();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function checkOrderExist($sOxId = null): bool
+    {
+        if ($this->blIsNetsHostedModeReturn === false) {
+            return parent::checkOrderExist($sOxId);
+        }
+
+        return false; // In hosted mode the parent finalizeOrder method is run again so the order DOES exist, but thats ok
     }
 }
