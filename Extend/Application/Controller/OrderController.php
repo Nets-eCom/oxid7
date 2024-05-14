@@ -37,7 +37,7 @@ class OrderController extends OrderController_parent
             return parent::execute();
         } elseif ($pid && !empty($iPaymentStatus) && ($pidFail != 'true')) {
             DebugLog::getInstance()->log("nexi-checkout redirect to thankyou page Pid : ".json_encode($pid));
-            Registry::getUtils()->redirect(Registry::getRequest()->getCurrentShopUrl() . 'index.php?cl=thankyou&orderid=' . $iPaymentStatus[0]['oxorder_id'], true, 301);
+            Registry::getUtils()->redirect(Registry::getConfig()->getCurrentShopUrl() . 'index.php?cl=order&paymentId=' . $pid . '&orderid=' . $iPaymentStatus[0]['oxorder_id'], true, 301);
             return false;
         } elseif ($pidFail == 'true') {
             DebugLog::getInstance()->log("nexi-checkout embedded case redirect to payment error PID : ".json_encode($pid));
@@ -99,6 +99,8 @@ class OrderController extends OrderController_parent
             if (isset($aResponse['payment']['myReference']) && $aResponse['payment']['myReference'] === $sSessChallenge) {
                 return parent::render();
             }
+
+            return $this->redirectToPaymentStepWithErrorMsg("NEXI_CHECKOUT_ERROR_TRANSACTIONID_MISSMATCH");
         }
 
         $sParentReturn = parent::render();
@@ -189,7 +191,7 @@ class OrderController extends OrderController_parent
     {
         Registry::getSession()->setVariable('payerror', -50);
         Registry::getSession()->setVariable('payerrortext', Registry::getLang()->translateString($sErrorLangIdent));
-        Registry::getUtils()->redirect(Registry::getRequest()->getCurrentShopUrl().'index.php?cl=payment');
+        Registry::getUtils()->redirect(Registry::getConfig()->getCurrentShopUrl().'index.php?cl=payment');
         return false;
     }
 
