@@ -3,7 +3,7 @@
 {% block checkout_order_btn_confirm_bottom %}
     {{ parent() }}
     {% if oView.isEmbedded() and oView.getPayment().isNexiCheckout() %}
-        <h4 class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="card-header d-flex justify-content-between align-items-center" id="nexi-checkout-embedded-checkout">
             {{ translate({ ident: "NEXI_CHECKOUT" }) }}
         </h4>
 

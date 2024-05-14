@@ -13,7 +13,7 @@ use NexiCheckout\Application\Helper\Order as OrderHelper;
 
 class OrderController extends OrderController_parent
 {
-     /**
+    /**
      * calling parent::render() based on current data paased by embedded response
      * and redirecting to thankyou page if order already finalized
      * @return void
@@ -23,7 +23,6 @@ class OrderController extends OrderController_parent
         $pid = Registry::getRequest()->getRequestParameter('paymentId');
         $pidFail = Registry::getRequest()->getRequestParameter('paymentFailed');
         $paymnetdonefor_pid = Registry::getSession()->getVariable("paymnetdonefor_pid");
-
 
         $transaction = oxNew(NexiCheckoutTransactions::class);
         $iPaymentStatus = $transaction->getTransactionIdByPaymentId($pid);
@@ -82,22 +81,29 @@ class OrderController extends OrderController_parent
     public function render()
     {
         $pid = Registry::getRequest()->getRequestParameter('paymentId');
-        $pidFail = Registry::getRequest()->getRequestParameter('paymentFailed');
-        
-        if (!$pid && $pidFail != 'true') {
-            $sSessChallenge = Registry::getSession()->getVariable('sess_challenge');
-            $blIsUserRedirected = Registry::getSession()->getVariable('nexiCheckoutCustomerIsRedirected');
-            if (!empty($sSessChallenge) && $blIsUserRedirected === true) {
-                OrderHelper::getInstance()->cancelCurrentOrder();
-            }
-            Registry::getSession()->deleteVariable('nexiCheckoutCustomerIsRedirected');
-
-            $sParentReturn = parent::render();
-            if ($this->getIsOrderStep() && $this->getPayment()->isNexiCheckout() && $this->isEmbedded()) {
-                $this->prepareEmbeddedOrderProcess();
-            }
-            return $sParentReturn;
+        $sSessChallenge = Registry::getSession()->getVariable('sess_challenge');
+        $blIsUserRedirected = Registry::getSession()->getVariable('nexiCheckoutCustomerIsRedirected');
+        if (!empty($sSessChallenge) && $blIsUserRedirected === true) {
+            OrderHelper::getInstance()->cancelCurrentOrder();
         }
+        Registry::getSession()->deleteVariable('nexiCheckoutCustomerIsRedirected');
+
+        if (!$this->getIsOrderStep() || !$this->isEmbedded()) {
+            return parent::render();
+        }
+
+        if (!empty($pid)) {
+            $oPaymentInfo = oxNew(PaymentRetrieve::class);
+            $aResponse = $oPaymentInfo->sendRequest($pid);
+
+            if (isset($aResponse['payment']['myReference']) && $aResponse['payment']['myReference'] === $sSessChallenge) {
+                return parent::render();
+            }
+        }
+
+        $sParentReturn = parent::render();
+        $this->prepareEmbeddedOrderProcess();
+        return $sParentReturn;
     }
 
     protected function prepareEmbeddedOrderProcess()
