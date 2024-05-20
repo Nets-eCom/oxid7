@@ -16,8 +16,6 @@ class Api
     const JS_ENDPOINT_LIVE = "https://checkout.dibspayment.eu/v1/checkout.js";
     const JS_ENDPOINT_TEST = "https://test.checkout.dibspayment.eu/v1/checkout.js";
 
-    const REPORTING_API = 'https://ps17.sokoni.it/module/api/enquiry';
-
     const EMBEDDED = "EmbeddedCheckout";
     const HOSTED = "HostedPaymentPage";
 
@@ -130,16 +128,6 @@ class Api
     public function isHostedMode()
     {
         return $this->getIntegrationType() === self::HOSTED;
-    }
-
-    /**
-     * Returns reporting api url
-     *
-     * @return string
-     */
-    public function getReportingApiUrl()
-    {
-        return self::REPORTING_API;
     }
 
     /**
