@@ -87,17 +87,7 @@ class PaymentGateway extends PaymentGateway_parent
 
         DebugLog::getInstance()->log("payment api status NexiCheckoutOrder, response checkout url ".$aResponse['payment']['checkout']['url']);
 
-        $aRefUpdateData = [
-            'reference' => $oOrder->oxorder__oxordernr->value,
-            'checkoutUrl' => $aResponse['payment']['checkout']['url']
-        ];
-        $oReferenceInformationUpdate = oxNew(ReferenceInformationUpdate::class);
-        $oReferenceInformationUpdate->sendRequest($sPaymentId, $aRefUpdateData);
-
-        $oPaymentInfo = oxNew(PaymentRetrieve::class);
-        $aResponse = $oPaymentInfo->sendRequest($sPaymentId);
-
-        if (isset($aResponse)) {
+        if (isset($aResponse['payment']['charges'])) {
             foreach ($aResponse['payment']['charges'] as $ky => $val) {
                 foreach ($val['orderItems'] as $key => $value) {
                     if (isset($val['chargeId'])) {
@@ -107,5 +97,12 @@ class PaymentGateway extends PaymentGateway_parent
                 }
             }
         }
+
+        $aRefUpdateData = [
+            'reference' => $oOrder->oxorder__oxordernr->value,
+            'checkoutUrl' => $aResponse['payment']['checkout']['url']
+        ];
+        $oReferenceInformationUpdate = oxNew(ReferenceInformationUpdate::class);
+        $oReferenceInformationUpdate->sendRequest($sPaymentId, $aRefUpdateData);
     }
 }

@@ -15,6 +15,7 @@ $aLang = [
     'NEXI_CHECKOUT_ORDER_ERROR_MESSAGE'           => "Bestellung fehlgeschlagen - bitte Warenkorb prüfen",
     'NEXI_CHECKOUT_ERROR_ORDER_NOT_FOUND'         => "Ihre Bestellung konnte nicht gefunden werden.",
     'NEXI_CHECKOUT_ERROR_TRANSACTIONID_MISSING'   => "Bei Ihrer Bezahlung ist ein Fehler aufgetreten.",
+    'NEXI_CHECKOUT_ERROR_TRANSACTIONID_MISSMATCH' => "Bei Ihrer Bezahlung ist ein Fehler aufgetreten. Die Bezahlung entspricht nicht der Bestellung.",
     'NEXI_CHECKOUT' => 'Nexi Checkout',
     'NEXI_CHECKOUT_PAY_METHOD_nexi_checkout_payment_id' => 'Zahlungskennung',
 ];

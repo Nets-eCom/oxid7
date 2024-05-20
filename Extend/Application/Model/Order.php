@@ -318,6 +318,10 @@ class Order extends Order_parent
 
         $iReturn = parent::finalizeOrder($oBasket, $oUser, $blRecalculatingOrder);
 
+        if (!$this->isNexiCheckout()) {
+            return $iReturn;
+        }
+
         if (in_array($iReturn, [self::ORDER_STATE_OK, self::ORDER_STATE_MAILINGERROR])) { // finalize was successful
             if ($this->setting->getBoolean('nexi_checkout_autocapture', Module::ID)) {
                 $this->markAsPaid();
