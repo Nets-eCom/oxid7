@@ -15,6 +15,7 @@ $aLang = [
     'NEXI_CHECKOUT_ORDER_ERROR_MESSAGE'           => "Order failed - please check the basket",
     'NEXI_CHECKOUT_ERROR_ORDER_NOT_FOUND'         => "Your order could not be found.",
     'NEXI_CHECKOUT_ERROR_TRANSACTIONID_MISSING'   => "There was an error with your payment.",
+    'NEXI_CHECKOUT_ERROR_TRANSACTIONID_MISSMATCH' => "There was an error with your payment. Payment does not match order.",
     'NEXI_CHECKOUT' => 'Nexi Checkout',
     'NEXI_CHECKOUT_PAY_METHOD_nexi_checkout_payment_id' => 'Payment ID',
 ];

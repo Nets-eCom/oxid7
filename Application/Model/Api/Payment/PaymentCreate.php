@@ -163,7 +163,7 @@ class PaymentCreate extends OrderItemRequest
 
         if (Api::getInstance()->isEmbeddedMode()) {
             $stoken = '&stoken='.Registry::getSession()->getSessionChallengeToken();
-            $aCheckout['url'] = urldecode(Registry::getConfig()->getCurrentShopUrl().'index.php?cl=order&fnc=execute'.$stoken);
+            $aCheckout['url'] = urldecode(Registry::getConfig()->getCurrentShopUrl().'index.php?cl=order'.$stoken.'#nexi-checkout-embedded-checkout');
         } else {
             $aCheckout['returnUrl'] = urldecode(Registry::getConfig()->getCurrentShopUrl().'index.php?cl=order&fnc=returnHosted'.$this->getReturnParameters());
             $aCheckout['cancelUrl'] = urldecode(Registry::getConfig()->getCurrentShopUrl().'index.php?cl=payment');
@@ -189,6 +189,7 @@ class PaymentCreate extends OrderItemRequest
                 'reference' => $oOrder->getId()
             ],
             'checkout' => $this->getCheckoutData($oOrder),
+            'myReference' => $oOrder->getId(),
         ];
     }
 
