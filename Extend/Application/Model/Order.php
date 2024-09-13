@@ -258,7 +258,7 @@ class Order extends Order_parent
         $oPaymentCancel = oxNew(PaymentCancel::class);
         $oPaymentCancel->sendRequest($this);
 
-        $this->cancelOrder();
+        parent::cancelOrder();
     }
 
     /**
