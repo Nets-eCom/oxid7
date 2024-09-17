@@ -2,6 +2,10 @@
 
 ## CHANGELOG
 
+### Version 1.0.2 - Released 2024-09-17
+
+* Fix: use parent instead of recursive call on order cancel
+
 ### Version 1.0.1 - Released 2024-05-20
 
 * Update: redirect back to checkout page for embedded klarna
