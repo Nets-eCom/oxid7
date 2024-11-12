@@ -26,6 +26,7 @@
 
             const checkout = new Dibs.Checkout(checkoutOptions);
             checkout.on('payment-completed', function () {
+                document.getElementById('checkAgbTop').click();
                 document.getElementById('orderConfirmAgbBottom').submit();
             });
         </script>
