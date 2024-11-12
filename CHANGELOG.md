@@ -2,6 +2,11 @@
 
 ## CHANGELOG
 
+### Version 1.0.3 - Released 2024-11-12
+
+* Fix: check terms and conditions when embedded mode & adb are enabled
+* Fix: sanitize address values
+
 ### Version 1.0.2 - Released 2024-09-17
 
 * Fix: use parent instead of recursive call on order cancel
