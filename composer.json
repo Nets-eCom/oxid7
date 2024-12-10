@@ -1,7 +1,7 @@
 {
   "name": "nexi-checkout/oxid7",
   "description": "Nexi Checkout payment module for Oxid 7",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "oxideshop-module",
   "keywords": [
     "oxid",

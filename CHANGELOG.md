@@ -2,6 +2,9 @@
 
 ## CHANGELOG
 
+### Version 1.0.4 - Released 2024-12-10
+* Fix: rename hosted attribute
+
 ### Version 1.0.3 - Released 2024-11-12
 
 * Fix: check terms and conditions when embedded mode & adb are enabled
