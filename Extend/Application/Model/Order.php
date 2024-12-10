@@ -429,7 +429,7 @@ class Order extends Order_parent
      */
     protected function checkOrderExist($sOxId = null): bool
     {
-        if ($this->blIsNetsHostedModeReturn === false) {
+        if ($this->isHostedModeReturn === false) {
             return parent::checkOrderExist($sOxId);
         }
 
